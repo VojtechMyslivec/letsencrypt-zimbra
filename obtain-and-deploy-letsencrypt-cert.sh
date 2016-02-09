@@ -15,11 +15,11 @@ USAGE="USAGE
     The script will stop zimbra' services for a while and restart
     them once the certificate is extended and deployed. If the
     obtained certificate isn't valid after all, Zimbra will start
-    with the old certificate unchained.
+    with the old certificate unchanged.
 
     Suitable to be run via cron.
 
-    Friendly notice: restarting Zimbra service take a while (1+m).
+    Friendly notice: restarting Zimbra service take a while (1+ m).
 
     Depends on:
         zimbra
