@@ -51,8 +51,8 @@ zimbra_key="${zimbra_ssl_dir}/commercial.key"
 
 # common name in the certificate
 CN="mail.theajty.com"
-# subject in request
-cert_subject="/C=CZ/ST=Czech Republic/L=Prague/O=AJTY/CN=$CN/"
+# subject in request -- does not matter for letsencrypt but must be there for openssl
+cert_subject="/"
 # openssl config skeleton
 #  it is important to have an alt_names section there!
 openssl_config="
