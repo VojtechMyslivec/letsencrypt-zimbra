@@ -8,21 +8,19 @@ USAGE="USAGE
     $SCRIPTNAME -h | --help | help
     $SCRIPTNAME
 
-    This script is used for extend the already-deployed zimbra
-    (so-called) commercial certificate issued by Let's Encrypt
-    certification authority.
+    This script is used for extend the already-deployed gitlab
+    nginx certificate issued by Let's Encrypt certification
+    authority.
 
-    The script will stop zimbra' services for a while and restart
+    The script will stop gitlab' services for a while and restart
     them once the certificate is extended and deployed. If the
-    obtained certificate isn't valid after all, Zimbra will start
+    obtained certificate isn't valid after all, gitlab will start
     with the old certificate unchanged.
 
     Suitable to be run via cron.
 
-    Friendly notice: restarting Zimbra service take a while (1+ m).
-
     Depends on:
-        zimbra
+        gitlab
         letsencrypt-auto utility
         openssl"
 
@@ -32,26 +30,26 @@ USAGE="USAGE
 # should be in config file o_O
 
 # letsencrypt tool
-letsencrypt="/root/letsencrypt/letsencrypt-auto"
+letsencrypt="/opt/letsencrypt/letsencrypt-auto"
 # the name of file which letsencrypt will generate
 letsencrypt_issued_cert_file="0000_cert.pem"
 # intermediate CA
 letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
 # root CA
-root_CA_file="/root/letsencrypt-zimbra/DSTRootCAX3.pem"
+root_CA_file="/opt/letsencrypt-gitlab/DSTRootCAX3.pem"
 
-zimbra_service="zimbra"
-zimbra_user="zimbra"
-zimbra_dir="/opt/zimbra"
+# gitlab controller
+gitlab_ctl="gitlab-ctl"
+# gitlab' services controller -- to start/stop nginx
+gitlab_sv_ctl="/opt/gitlab/embedded/bin/sv"
 
-zimbra_bin_dir="${zimbra_dir}/bin"
-zmcertmgr="${zimbra_bin_dir}/zmcertmgr"
-
-zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
-zimbra_key="${zimbra_ssl_dir}/commercial.key"
+# this is the server certificate with CA together -- alias chain
+ssl_dir="/etc/ssl/private"
+gitlab_cert="${ssl_dir}/chain_rsa_vyvoj.meteocentrum.cz.pem"
+gitlab_key="${ssl_dir}/key_rsa_vyvoj.meteocentrum.cz.pem"
 
 # common name in the certificate
-CN="mail.theajty.com"
+CN="vyvoj.meteocentrum.cz"
 # subject in request -- does not matter for letsencrypt but must be there for openssl
 cert_subject="/"
 # openssl config skeleton
@@ -113,14 +111,14 @@ cleanup() {
 # just a kindly message how to fix stopped nginx
 fix_nginx_message() {
     echo "        You must probably fix it with:
-        'su -c 'zmproxyctl start; zmmailboxdctl start' - $zimbra_user'
-        command or something." >&2
+        '${gitlab_ctl} restart' or '${gitlab_ctl} reconfigure'
+        commands or something." >&2
 }
 
-# this function will stop Zimbra's nginx
+# this function will stop gitlab's nginx
 stop_nginx() {
-    su -c 'zmproxyctl stop; zmmailboxdctl stop' - "$zimbra_user" > /dev/null || {
-        error "There were some error during stopping the Zimbra' nginx."
+    "$gitlab_sv_ctl" stop nginx > /dev/null || {
+        error "There were some error during stopping the gitlab' nginx."
         fix_nginx_message
         cleanup
         exit 3
@@ -129,8 +127,8 @@ stop_nginx() {
 
 # and another one to start it
 start_nginx() {
-    su -c 'zmproxyctl start; zmmailboxdctl start' - "$zimbra_user" > /dev/null || {
-        error "There were some error during starting the Zimbra' nginx."
+    "$gitlab_sv_ctl" start nginx > /dev/null || {
+        error "There were some error during starting the gitlab' nginx."
         fix_nginx_message
         cleanup
         exit 3
@@ -163,13 +161,8 @@ executable_file "$letsencrypt" || {
     exit 2
 }
 
-executable_file "$zmcertmgr" || {
-    error "Zimbra cert. manager '$zmcertmgr' isn't executable file."
-    exit 2
-}
-
-readable_file "$zimbra_key" || {
-    error "Private key '$zimbra_key' isn't readable file."
+readable_file "$gitlab_key" || {
+    error "Private key '$gitlab_key' isn't readable file."
     exit 2
 }
 
@@ -200,15 +193,16 @@ echo "$openssl_config" > "$openssl_config_file"
 openssl req -new -nodes -sha256 -outform der \
     -config "$openssl_config_file" \
     -subj "$cert_subject" \
-    -key "$zimbra_key" \
+    -key "$gitlab_key" \
     -out "$request_file" || {
     error "Cannot create the certificate signing request."
     cleanup
     exit 3
 }
 
-# release the 443 port -- stop Zimbra' nginx
-stop_nginx
+# release the 443 port -- stop gitlab' nginx
+# TODO this nginx is not listening at 443
+#stop_nginx
 
 # ----------------------------------------------------------
 # letsencrypt utility stores the obtained certificates in PWD,
@@ -227,7 +221,8 @@ cd - > /dev/null
 # ----------------------------------------------------------
 
 # start Zimbra' nginx again
-start_nginx
+# TODO this nginx is not listening at 443 and wasn't stopped
+#start_nginx
 
 
 # --------------------------------------------------------------------
@@ -250,25 +245,40 @@ readable_file "$intermediate_CA_file" || {
     exit 4
 }
 
-# create one CA chain file
-cat "$root_CA_file" "$intermediate_CA_file" > "$chain_file"
+# # create one CA chain file
+# cat "$root_CA_file" "$intermediate_CA_file" > "$chain_file"
+# create one cert with  chain file
+cat "$cert_file" "$intermediate_CA_file" > "$chain_file"
 
-# verify it with Zimbra tool
-"$zmcertmgr" verifycrt comm "$zimbra_key" "$cert_file" "$chain_file" > /dev/null || {
-    error "Verification of the issued certificate with '$zmcertmgr' failed."
+# # verify it with Zimbra tool
+# "$zmcertmgr" verifycrt comm "$zimbra_key" "$cert_file" "$chain_file" > /dev/null || {
+#     error "Verification of the issued certificate with '$zmcertmgr' failed."
+#     exit 4
+# }
+
+# # install the certificate to Zimbra
+# "$zmcertmgr" deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
+#     error "Installation of the issued certificate with '$zmcertmgr' failed."
+#     exit 4
+# }
+
+
+# install the certificate to gitlab -- simply copy the file on the place
+# keep one last certificate in ssl_dir
+mv "$gitlab_cert" "$gitlab_cert-bak" || {
+    error "Cannot backup (move) the old certificate '$gitlab_cert'."
     exit 4
 }
-
-# install the certificate to Zimbra
-"$zmcertmgr" deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
+# replace it with the new issued certificate
+mv "$chain_file" "$gitlab_cert" || {
     error "Installation of the issued certificate with '$zmcertmgr' failed."
     exit 4
 }
 
 
-# finally, restart the Zimbra
-service "$zimbra_service" restart > /dev/null || {
-    error "Restarting zimbra service failed."
+# finally, restart the gitlab
+"$gitlab_ctl" restart > /dev/null || {
+    error "Restarting gitlab services failed."
     exit 5
 }
 
