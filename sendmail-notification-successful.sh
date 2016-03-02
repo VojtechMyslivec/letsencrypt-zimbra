@@ -1,10 +1,10 @@
 #!/bin/sh
 email=""
-sendmail="/opt/zimbra/postfix/sbin/sendmail"
+mail="/usr/bin/mail"
 subject="Certificate has been renewed"
 message="Hello,
-this is just a kindly reminder that a letsencrypt-zimbra tool
-renewed successfully your Zimbra certificate!
+this is just a kindly reminder that a letsencrypt-gitlab tool
+renewed successfully your gitlab certificate!
 
 Sincerelly yours,
 cron"
@@ -20,7 +20,5 @@ USAGE="USAGE
     exit 1
 }
 
-echo "Subject: $subject
-
-$message" | "$sendmail" "$email"
+echo "$message" | "$mail" -s "$subject" "$email"
 

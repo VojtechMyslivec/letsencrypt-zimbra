@@ -1,10 +1,10 @@
 #!/bin/bash
 email=""
-sendmail="/opt/zimbra/postfix/sbin/sendmail"
+mail="/usr/bin/mail"
 subject="Certificate renewal in $1 day(s)"
 message="Hello,
-this is just a kindly reminder that a letsencrypt-zimbra tool
-will try to obtain and install new zimbra certificate in $1 day(s).
+this is just a kindly reminder that a letsencrypt-gitlab tool
+will try to obtain and install new gitlab certificate in $1 day(s).
 
 Sincerelly yours,
 cron"
@@ -27,7 +27,5 @@ USAGE="USAGE
 }
 
 
-echo "Subject: $subject
-
-$message" | "$sendmail" "$email"
+echo "$message" | "$mail" -s "$subject" "$email"
 

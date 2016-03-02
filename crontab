@@ -1,6 +1,6 @@
 # send a notification a week before the certificate will be obtained
-0 0 1 */2 * root /root/letsencrypt-zimbra/sendmail-notification.sh 7
+0 0 1 */2 * root /opt/letsencrypt-gitlab/sendmail-notification.sh 7
 # send a notification a day before the certificate will be obtained
-0 0 7 */2 * root /root/letsencrypt-zimbra/sendmail-notification.sh 1
+0 0 7 */2 * root /opt/letsencrypt-gitlab/sendmail-notification.sh 1
 # obtain the certificate
-0 0 8 */2 * root /root/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh && /root/letsencrypt-zimbra/sendmail-notification-successful.sh
+0 0 8 */2 * root /opt/letsencrypt-gitlab/obtain-and-deploy-letsencrypt-cert.sh && /opt/letsencrypt-gitlab/sendmail-notification-successful.sh
