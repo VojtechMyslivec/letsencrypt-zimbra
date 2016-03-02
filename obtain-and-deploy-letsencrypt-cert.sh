@@ -269,7 +269,7 @@ cat "$root_CA_file" "$intermediate_CA_file" > "$chain_file"
 # finally, restart the Zimbra
 service "$zimbra_service" restart > /dev/null || {
     error "Restarting zimbra service failed."
-    exit 4
+    exit 5
 }
 
 
