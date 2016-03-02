@@ -23,7 +23,8 @@ USAGE="USAGE
 
     Depends on:
         zimbra
-        letsencrypt-auto utility"
+        letsencrypt-auto utility
+        openssl"
 
 # --------------------------------------------------------------------
 # -- Variables -------------------------------------------------------
@@ -33,9 +34,9 @@ USAGE="USAGE
 # letsencrypt tool
 letsencrypt="/root/letsencrypt/letsencrypt-auto"
 # the name of file which letsencrypt will generate
-letsencript_issued_cert_file="0000_cert.pem"
+letsencrypt_issued_cert_file="0000_cert.pem"
 # intermediate CA
-letsencript_issued_intermediate_CA_file="0000_chain.pem"
+letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
 # root CA
 root_CA_file="/root/letsencrypt-zimbra/DSTRootCAX3.pem"
 
@@ -214,7 +215,7 @@ stop_nginx
 # so we must cd in the temp directory
 cd "$temp_dir"
 
-"$letsencrypt" certonly --csr "$request_file" >/dev/null || {
+"$letsencrypt" certonly --csr "$request_file" > /dev/null || {
     error "The certificate cannot be obtained with '$letsencrypt' tool."
     start_nginx
     cleanup
@@ -233,8 +234,8 @@ start_nginx
 # -- Deploying the certificate ---------------------------------------
 # --------------------------------------------------------------------
 
-cert_file="${temp_dir}/${letsencript_issued_cert_file}"
-intermediate_CA_file="${temp_dir}/${letsencript_issued_intermediate_CA_file}"
+cert_file="${temp_dir}/${letsencrypt_issued_cert_file}"
+intermediate_CA_file="${temp_dir}/${letsencrypt_issued_intermediate_CA_file}"
 chain_file="${temp_dir}/chain.pem"
 
 readable_file "$cert_file" || {
