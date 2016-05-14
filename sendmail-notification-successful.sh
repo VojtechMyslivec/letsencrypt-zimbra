@@ -1,7 +1,7 @@
 #!/bin/sh
 email=""
 sendmail="/opt/zimbra/postfix/sbin/sendmail"
-subject="Certificate renewal in $1 day(s)"
+subject="Certificate has been renewed"
 message="Hello,
 this is just a kindly reminder that a letsencrypt-zimbra tool
 renewed successfully your Zimbra certificate!
