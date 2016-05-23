@@ -215,7 +215,7 @@ stop_nginx
 # so we must cd in the temp directory
 cd "$temp_dir"
 
-"$letsencrypt" certonly --standalone --csr "$request_file" > /dev/null 2>&1 {
+"$letsencrypt" certonly --standalone --csr "$request_file" > /dev/null 2>&1 || {
     error "The certificate cannot be obtained with '$letsencrypt' tool."
     start_nginx
     cleanup
