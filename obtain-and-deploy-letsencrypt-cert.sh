@@ -201,8 +201,7 @@ openssl req -new -nodes -sha256 -outform der \
 }
 
 # release the 443 port -- stop gitlab' nginx
-# TODO this nginx is not listening at 443
-#stop_nginx
+stop_nginx
 
 # ----------------------------------------------------------
 # letsencrypt utility stores the obtained certificates in PWD,
@@ -220,9 +219,8 @@ cd "$temp_dir"
 cd - > /dev/null
 # ----------------------------------------------------------
 
-# start Zimbra' nginx again
-# TODO this nginx is not listening at 443 and wasn't stopped
-#start_nginx
+# start gitlab' nginx again
+start_nginx
 
 
 # --------------------------------------------------------------------
@@ -250,28 +248,18 @@ readable_file "$intermediate_CA_file" || {
 # create one cert with  chain file
 cat "$cert_file" "$intermediate_CA_file" > "$chain_file"
 
-# # verify it with Zimbra tool
-# "$zmcertmgr" verifycrt comm "$zimbra_key" "$cert_file" "$chain_file" > /dev/null || {
-#     error "Verification of the issued certificate with '$zmcertmgr' failed."
-#     exit 4
-# }
-
-# # install the certificate to Zimbra
-# "$zmcertmgr" deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
-#     error "Installation of the issued certificate with '$zmcertmgr' failed."
-#     exit 4
-# }
-
 
 # install the certificate to gitlab -- simply copy the file on the place
 # keep one last certificate in ssl_dir
 mv "$gitlab_cert" "$gitlab_cert-bak" || {
     error "Cannot backup (move) the old certificate '$gitlab_cert'."
+    cleanup
     exit 4
 }
 # replace it with the new issued certificate
 mv "$chain_file" "$gitlab_cert" || {
     error "Installation of the issued certificate with '$zmcertmgr' failed."
+    cleanup
     exit 4
 }
 
@@ -279,6 +267,7 @@ mv "$chain_file" "$gitlab_cert" || {
 # finally, restart the gitlab
 "$gitlab_ctl" restart > /dev/null || {
     error "Restarting gitlab services failed."
+    cleanup
     exit 5
 }
 
