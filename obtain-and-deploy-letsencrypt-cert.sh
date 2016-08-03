@@ -38,14 +38,15 @@ USAGE="USAGE
 #  $1 - level
 #  $2 - message
 
+message() {
+    echo "$SCRIPTNAME[$1]: $2" >&2
+}
+
 error() {
     message "err" "$*"
 }
 
-{
-	    echo "$SCRIPTNAME[$1]: $2" >&2
-    }
-    warning() {
+warning() {
     message "warn" "$*"
 }
 
