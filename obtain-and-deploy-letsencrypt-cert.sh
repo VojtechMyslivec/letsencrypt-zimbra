@@ -61,7 +61,7 @@ renew_cert="no"
 # -- Get parameters and source variables -----------------------------
 # --------------------------------------------------------------------
 
-# HELP?
+# single argument case: help, renew o custom config file
 [ $# -eq 1 ] && {
     if [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "help" ]; then
         echo "$USAGE"
@@ -70,24 +70,22 @@ renew_cert="no"
     if [ "$1" == "--renew" ]; then
         renew_cert="yes"
     fi
-    if [ -n "$1"]; then
+    if [ -n "$1" ]; then
         config_file="$1"
     fi
 
 }
 
+# double argument: renew and config
 [ $# -eq 2 ] && {
     if [ "$1" == "--renew" ]; then
         renew_cert="yes"
         config_file="$2"
+    else
+        exit 1
     fi
 }
 
-
-[ $# -eq 0 ] || {
-    echo "$USAGE" >&2
-    exit 1
-}
 
 # source the variables file
 .  "$config_file"
