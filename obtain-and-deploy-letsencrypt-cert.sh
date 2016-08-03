@@ -34,13 +34,17 @@ USAGE="USAGE
 # -- Get variables from config file ----------------------------------
 # --------------------------------------------------------------------
 
-while getopts f:t: opts; do
+# use default config file if nothing is declared
+config_file="letsencrypt-zimbra.conf"
+
+# get the path from the -c parameter
+while getopts c: opts; do
     case ${opts} in
         c) config_file=${OPTARG} ;;
-        *) config_file="letsencrypt-zimbra.conf" ;;
     esac
 done
 
+# source the variables file
 .  "$config_file"
 
 # --------------------------------------------------------------------
