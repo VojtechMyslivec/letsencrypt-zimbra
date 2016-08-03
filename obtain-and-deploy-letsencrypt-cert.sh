@@ -171,8 +171,8 @@ executable_file "$zmcertmgr" || {
     exit 2
 }
 
-readable_file "$zimbra_key" || {
-    error "Private key '$zimbra_key' isn't readable file."
+readable_file "$letsencrypt_issued_key_file" || {
+    error "Private key '$letsencrypt_issued_key_file' isn't readable file."
     exit 2
 }
 
@@ -195,7 +195,7 @@ temp_dir=$( mktemp -d ) || {
 # -- Obtaining the certificate ---------------------------------------
 # --------------------------------------------------------------------
 
-if [ "$renew_cert" == "no"]; then
+if [ "$renew_cert" == "no" ]; then
     
     # release the 443 port -- stop Zimbra' nginx
     stop_nginx
@@ -225,40 +225,28 @@ fi
 # -- Deploying the certificate ---------------------------------------
 # --------------------------------------------------------------------
 
-cp $letsencrypt_genereated_key_file "$temp_dir/privkey.pem"
-cp $letsencrypt_issued_intermediate_CA_file "$temp_dir/chain.pem"
-cp $letsencrypt_issued_cert_file "$temp_dir/cert.pem"
+cp $letsencrypt_issued_key_file "$temp_dir/privkey.pem"
+cat "$root_CA_file" "$letsencrypt_issued_fullchain_file" > "${temp_dir}/zimbra_chain.pem"
 chown -R "$zimbra_user":"$zimbra_user" $temp_dir
 
-cert_file="$temp_dir/privkey.pem"
-intermediate_CA_file="$temp_dir/chain.pem"
-zimbra_key="$temp_dir/privkey.pem"
-chain_file="${temp_dir}/zimbra_chain.pem"
+zimbra_cert_file="$temp_dir/zimbra_chain.pem"
+zimbra_key_file="$temp_dir/privkey.pem"
 
 
-readable_file "$cert_file" || {
-    error "The issued certificate file '$cert_file' isn't readable file. Maybe it was created with different name?"
+readable_file "$letsencrypt_issued_fullchain_file" || {
+    error "The issued intermediate CA file '$letsencrypt_issued_fullchain_file' isn't readable file. Maybe it was created with different name?"
     cleanup
     exit 4
 }
-
-readable_file "$intermediate_CA_file" || {
-    error "The issued intermediate CA file '$intermediate_CA_file' isn't readable file. Maybe it was created with different name?"
-    cleanup
-    exit 4
-}
-
-# create one CA chain file
-cat "$root_CA_file" "$intermediate_CA_file" > "$chain_file"
 
 # verify it with Zimbra tool
-su -c "'$zmcertmgr' verifycrt comm '$zimbra_key' '$cert_file' '$chain_file'" - "$zimbra_user" || {
+su -c "'$zmcertmgr' verifycrt comm '$zimbra_key_file' '$zimbra_cert_file'" - "$zimbra_user" || {
     error "Verification of the issued certificate with '$zmcertmgr' failed."
     exit 4
 }
 
 # install the certificate to Zimbra
-su -c "'$zmcertmgr' deploycrt comm '$cert_file' '$chain_file'" - "$zimbra_user" || {
+su -c "'$zmcertmgr' deploycrt comm '$zimbra_cert_file'" - "$zimbra_user" || {
     error "Installation of the issued certificate with '$zmcertmgr' failed."
     exit 4
 }
