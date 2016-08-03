@@ -31,14 +31,17 @@ USAGE="USAGE
     obtained certificate isn't valid after all, Zimbra will start
     with the old certificate unchanged.
 
-    Suitable to be run via cron. Crontab example:
+    Suitable to be run via cron (you need to pass the config file path
+    to succesfully source the variables
+    
+    Crontab example for autorenewal:
 
     # send a notification a week before the certificate will be obtained
     0 0 1 */2 * root /root/letsencrypt-zimbra/sendmail-notification.sh 7
     # send a notification a day before the certificate will be obtained
     0 0 7 */2 * root /root/letsencrypt-zimbra/sendmail-notification.sh 1
     # obtain the certificate
-    0 0 8 */2 * root /root/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh --renew && /root/letsencrypt-zimbra/sendmail-notification-successful.sh
+    0 0 8 */2 * root /root/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh --renew /root/letsencrypt-zimbra/letsencrypt-zimbra.conf && /root/letsencrypt-zimbra/sendmail-notification-successful.sh
 
     Friendly notice: restarting Zimbra service take a while (1+ m).
 
@@ -52,7 +55,7 @@ USAGE="USAGE
 # --------------------------------------------------------------------
 
 # use default config file if nothing is declared
-config_file="${letsencrypt_zimbra_dir}/letsencrypt-zimbra.conf"
+config_file="letsencrypt-zimbra.conf"
 
 # generating a new certificate by default if the --renew is not passed
 renew_cert="no"
@@ -73,14 +76,15 @@ renew_cert="no"
     if [ -n "$1" ]; then
         config_file="$1"
     fi
-
 }
 
 # double argument: renew and config
 [ $# -eq 2 ] && {
     if [ "$1" == "--renew" ]; then
         renew_cert="yes"
-        config_file="$2"
+	if [ -z "$2" ]; then
+            config_file="$2"
+        fi
     else
         exit 1
     fi
@@ -226,27 +230,29 @@ fi
 # --------------------------------------------------------------------
 
 cp $letsencrypt_issued_key_file "$temp_dir/privkey.pem"
-cat "$root_CA_file" "$letsencrypt_issued_fullchain_file" > "${temp_dir}/zimbra_chain.pem"
+cp $letsencrypt_issued_cert_file "$temp_dir/cert.pem"
+cat "$root_CA_file" "$letsencrypt_issued_chain_file" > "${temp_dir}/zimbra_chain.pem"
 chown -R "$zimbra_user":"$zimbra_user" $temp_dir
 
-zimbra_cert_file="$temp_dir/zimbra_chain.pem"
+zimbra_cert_file="$temp_dir/cert.pem"
+zimbra_chain_file="$temp_dir/zimbra_chain.pem"
 zimbra_key_file="$temp_dir/privkey.pem"
 
 
 readable_file "$letsencrypt_issued_fullchain_file" || {
-    error "The issued intermediate CA file '$letsencrypt_issued_fullchain_file' isn't readable file. Maybe it was created with different name?"
+    error "The issued intermediate CA file '$letsencrypt_issued_chain_file' isn't readable file. Maybe it was created with different name?"
     cleanup
     exit 4
 }
 
 # verify it with Zimbra tool
-su -c "'$zmcertmgr' verifycrt comm '$zimbra_key_file' '$zimbra_cert_file'" - "$zimbra_user" || {
+su -c "'$zmcertmgr' verifycrt comm '$zimbra_key_file' '$zimbra_cert_file' '$zimbra_chain_file'" - "$zimbra_user" || {
     error "Verification of the issued certificate with '$zmcertmgr' failed."
     exit 4
 }
 
 # install the certificate to Zimbra
-su -c "'$zmcertmgr' deploycrt comm '$zimbra_cert_file'" - "$zimbra_user" || {
+su -c "'$zmcertmgr' deploycrt comm '$zimbra_cert_file' '$zimbra_chain_file'" - "$zimbra_user" || {
     error "Installation of the issued certificate with '$zmcertmgr' failed."
     exit 4
 }
