@@ -208,7 +208,7 @@ if [ "$renew_cert" == "no" ]; then
     # letsencrypt utility stores the obtained certificates in PWD,
     # so we must cd in the temp directory
     
-    "$letsencrypt" certonly --standalone --email "$letsencrypt_email" -d "$CN"  || {
+    "$letsencrypt" certonly --standalone --agree-tos --text --email "$letsencrypt_email" -d "$CN"  || {
         error "The certificate cannot be obtained with '$letsencrypt' tool."
         start_nginx
         cleanup
@@ -222,7 +222,7 @@ if [ "$renew_cert" == "no" ]; then
     # start Zimbra' nginx again
     start_nginx
 else
-    "$letsencrypt" renew
+    "$letsencrypt" renew --renew-by-default
 fi
 
 # --------------------------------------------------------------------
@@ -239,7 +239,7 @@ zimbra_chain_file="$temp_dir/zimbra_chain.pem"
 zimbra_key_file="$temp_dir/privkey.pem"
 
 
-readable_file "$letsencrypt_issued_fullchain_file" || {
+readable_file "$letsencrypt_issued_chain_file" || {
     error "The issued intermediate CA file '$letsencrypt_issued_chain_file' isn't readable file. Maybe it was created with different name?"
     cleanup
     exit 4
