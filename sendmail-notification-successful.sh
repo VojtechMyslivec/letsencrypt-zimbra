@@ -1,6 +1,6 @@
 #!/bin/sh
 email="$2"
-sendmail="/usr/sbin/sendmail"
+sendmail="/opt/zimbra/common/sbin/sendmail"
 subject="Certificate has been renewed"
 message="Hello,
 this is just a kindly reminder that a letsencrypt-zimbra tool
