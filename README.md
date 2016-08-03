@@ -3,6 +3,7 @@ Files to automate the deploy of letsencrypt certificates to Zimbra
 
 You will probably find these files useful when you want to move your self-signed Zimbra certificate to the [letsencrypt](https://letsencrypt.org/) valid one and automate the renewal of the certificate.
 
+ - You'll need to have a working copy of the letsencrypt client and these scripts (simply run `git clone https://github.com/letsencrypt/letsencrypt && git clone https://github.com/penzoiders/zimbra-auto-letsencrypt.git`)
  - Set your variables by editing `letsencrypt-zimbra.conf` file
  - cd to the script folder and run `./zimbra-auto-letsencrypt.sh`, sit back and relax while your server gets a fresh certificate and deploys (zimbra services will be restarted)
  - run `./zimbra-auto-letsencrypt.sh --help` for help and for a copy-paste-friendly hint to automate renewals using crontab
@@ -10,9 +11,13 @@ You will probably find these files useful when you want to move your self-signed
 
 Tested on Zimbra 8.7 and CentOS 7 host (will not work for Zimbra < 8.7 since zmcertmgr is running as zimbra user)
 
-## Some links: 
-  - https://www.zimbra.com/
-  - https://letsencrypt.org/
+## Requirements:
+  - git
+  - Let's Encrypt client
+  - Zimbra 8.7
+
+## References: 
+  - https://wiki.zimbra.com/wiki/Installing_a_LetsEncrypt_SSL_Certificate/
   - https://github.com/letsencrypt/letsencrypt
 
 ## Credits:
