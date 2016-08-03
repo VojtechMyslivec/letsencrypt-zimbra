@@ -228,7 +228,7 @@ fi
 cp $letsencrypt_genereated_key_file "$temp_dir/privkey.pem"
 cp $letsencrypt_issued_intermediate_CA_file "$temp_dir/chain.pem"
 cp $letsencrypt_issued_cert_file "$temp_dir/cert.pem"
-chmod -R "$zimbra_user":"$zimbra_user" $temp_dir
+chown -R "$zimbra_user":"$zimbra_user" $temp_dir
 
 cert_file="$temp_dir/privkey.pem"
 intermediate_CA_file="$temp_dir/chain.pem"
