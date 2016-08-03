@@ -1,13 +1,17 @@
 #!/bin/bash
-# author: Vojtech Myslivec <vojtech@xmyslivec.cz>
+# credit for original script Vojtech Myslivec <vojtech@xmyslivec.cz>
+# https://github.com/VojtechMyslivec/letsencrypt-zimbra
 # GPLv2 licence
+
+# fork author: Lorenzo Faleschini <lorenzo@nordest.systems>
+# https://github.com/penzoiders/letsencrypt-zimbra
 
 SCRIPTNAME=${0##*/}
 
 USAGE="USAGE
     $SCRIPTNAME -h | --help | help
-    $SCRIPTNAME
-
+    $SCRIPTNAME -c /path/to/letsencrypt-zimbra.conf
+    
     This script is used for extend the already-deployed zimbra
     (so-called) commercial certificate issued by Let's Encrypt
     certification authority.
@@ -26,51 +30,6 @@ USAGE="USAGE
         letsencrypt-auto utility
         openssl"
 
-# --------------------------------------------------------------------
-# -- Variables -------------------------------------------------------
-# --------------------------------------------------------------------
-# should be in config file o_O
-
-# letsencrypt tool
-letsencrypt="/root/letsencrypt/letsencrypt-auto"
-# the name of file which letsencrypt will generate
-letsencrypt_issued_cert_file="0000_cert.pem"
-# intermediate CA
-letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
-# root CA
-root_CA_file="/root/letsencrypt-zimbra/DSTRootCAX3.pem"
-
-zimbra_service="zimbra"
-zimbra_user="zimbra"
-zimbra_dir="/opt/zimbra"
-
-zimbra_bin_dir="${zimbra_dir}/bin"
-zmcertmgr="${zimbra_bin_dir}/zmcertmgr"
-
-zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
-zimbra_key="${zimbra_ssl_dir}/commercial.key"
-
-# common name in the certificate
-CN="mail.theajty.com"
-# subject in request -- does not matter for letsencrypt but must be there for openssl
-cert_subject="/"
-# openssl config skeleton
-#  it is important to have an alt_names section there!
-openssl_config="
-[req]
-distinguished_name = req_distinguished_name
-req_extensions = v3_req
-
-[req_distinguished_name]
-[ v3_req ]
-
-basicConstraints = CA:FALSE
-keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-subjectAltName = @alt_names
-
-[alt_names]
-DNS.1 = $CN
-"
 
 # --------------------------------------------------------------------
 # -- Functions -------------------------------------------------------
@@ -78,15 +37,15 @@ DNS.1 = $CN
 # common message format, called by error, warning, information, ...
 #  $1 - level
 #  $2 - message
-message() {
-    echo "$SCRIPTNAME[$1]: $2" >&2
-}
 
 error() {
     message "err" "$*"
 }
 
-warning() {
+{
+	    echo "$SCRIPTNAME[$1]: $2" >&2
+    }
+    warning() {
     message "warn" "$*"
 }
 
@@ -179,6 +138,19 @@ readable_file "$root_CA_file" || {
 }
 
 # --------------------------------------------------------------------
+# -- Get variables from config file ----------------------------------
+# --------------------------------------------------------------------
+
+while getopts f:t: opts; do
+    case ${opts} in
+        c) config_file=${OPTARG} ;;
+        *) config_file="letsencrypt-zimbra.conf" ;;
+    esac
+done
+
+.  "$config_file"
+
+# --------------------------------------------------------------------
 # -- Temporary files -------------------------------------------------
 # --------------------------------------------------------------------
 
@@ -254,7 +226,7 @@ readable_file "$intermediate_CA_file" || {
 cat "$root_CA_file" "$intermediate_CA_file" > "$chain_file"
 
 # verify it with Zimbra tool
-"$zmcertmgr" verifycrt comm "$zimbra_key" "$cert_file" "$chain_file" > /dev/null || {
+su -c "'$zmcertmgr' verifycrt comm '$zimbra_key' '$cert_file' '$chain_file'" - "$zimbra_user"   > /dev/null || {
     error "Verification of the issued certificate with '$zmcertmgr' failed."
     exit 4
 }
