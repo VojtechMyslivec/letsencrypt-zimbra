@@ -45,11 +45,11 @@ USAGE="USAGE
     Crontab example for autorenewal:
 
     # send a notification a week before the certificate will be obtained
-    0 0 1 */2 * root /root/letsencrypt-zimbra/sendmail-notification.sh 7 your@email.com
+    0 0 1 */2 * root /root/zimbra-auto-letsencrypt/sendmail-notification.sh 7 your@email.com
     # send a notification a day before the certificate will be obtained
-    0 0 7 */2 * root /root/letsencrypt-zimbra/sendmail-notification.sh 1 your@email.com
+    0 0 7 */2 * root /root/zimbra-auto-letsencrypt/sendmail-notification.sh 1 your@email.com
     # obtain the certificate
-    0 0 8 */2 * root /root/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh --renew /root/letsencrypt-zimbra/letsencrypt-zimbra.conf && /root/letsencrypt-zimbra/sendmail-notification-successful.sh your@email.com
+    0 0 8 */2 * root /root/zimbra-auto-letsencrypt/zimbra-auto-letsencrypt.sh --renew /root/zimbra-auto-letsencrypt/letsencrypt-zimbra.conf && /root/zimbra-auto-letsencrypt/sendmail-notification-successful.sh your@email.com
 
     Friendly notice: 
     restarting Zimbra service take a while (1+ m).
