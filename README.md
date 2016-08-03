@@ -10,6 +10,7 @@ You will probably find these files useful when you want to move your self-signed
  - Enjoy **open-source** and **encryption**!
 
 Tested on Zimbra 8.7 and CentOS 7 host (will not work for Zimbra < 8.7 since zmcertmgr is running as zimbra user)
+NOTE: mail notifications not working at the moment... fixing soon.
 
 ## Requirements:
   - git
