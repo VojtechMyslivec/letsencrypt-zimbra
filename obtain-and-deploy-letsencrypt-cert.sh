@@ -9,11 +9,21 @@
 SCRIPTNAME=${0##*/}
 
 USAGE="USAGE
+    print this help:
     $SCRIPTNAME -h | --help | help
-    $SCRIPTNAME -c /path/to/letsencrypt-zimbra.conf
+
+    get and deploy the certificate:
+    $SCRIPTNAME
+    get and deploy the certificate passing a custom config file:
+    $SCRIPTNAME /path/to/letsencrypt-zimbra.conf
     
-    This script is used for extend the already-deployed zimbra
-    (so-called) commercial certificate issued by Let's Encrypt
+    renew the certificate:
+    $SCRIPTNAME --renew
+    renew the certificate passing  a custom config file:
+    $SCRIPTNAME --renew /path/to/letsencrypt-zimbra.conf
+
+    This script is used to generate/renew and deploy zimbra
+    (so-called) commercial certificate by using Let's Encrypt
     certification authority.
 
     The script will stop zimbra' services for a while and restart
@@ -21,7 +31,14 @@ USAGE="USAGE
     obtained certificate isn't valid after all, Zimbra will start
     with the old certificate unchanged.
 
-    Suitable to be run via cron.
+    Suitable to be run via cron. Crontab example:
+
+    # send a notification a week before the certificate will be obtained
+    0 0 1 */2 * root /root/letsencrypt-zimbra/sendmail-notification.sh 7
+    # send a notification a day before the certificate will be obtained
+    0 0 7 */2 * root /root/letsencrypt-zimbra/sendmail-notification.sh 1
+    # obtain the certificate
+    0 0 8 */2 * root /root/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh --renew && /root/letsencrypt-zimbra/sendmail-notification-successful.sh
 
     Friendly notice: restarting Zimbra service take a while (1+ m).
 
@@ -31,18 +48,46 @@ USAGE="USAGE
         openssl"
 
 # --------------------------------------------------------------------
-# -- Get variables from config file ----------------------------------
+# -- Setting default variables ---------------------------------------
 # --------------------------------------------------------------------
 
 # use default config file if nothing is declared
-config_file="letsencrypt-zimbra.conf"
+config_file="${letsencrypt_zimbra_dir}/letsencrypt-zimbra.conf"
 
-# get the path from the -c parameter
-while getopts c: opts; do
-    case ${opts} in
-        c) config_file=${OPTARG} ;;
-    esac
-done
+# generating a new certificate by default if the --renew is not passed
+renew_cert="no"
+
+# --------------------------------------------------------------------
+# -- Get parameters and source variables -----------------------------
+# --------------------------------------------------------------------
+
+# HELP?
+[ $# -eq 1 ] && {
+    if [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "help" ]; then
+        echo "$USAGE"
+        exit 0
+    fi
+    if [ "$1" == "--renew" ]; then
+        renew_cert="yes"
+    fi
+    if [ -n "$1"]; then
+        config_file="$1"
+    fi
+
+}
+
+[ $# -eq 2 ] && {
+    if [ "$1" == "--renew" ]; then
+        renew_cert="yes"
+        config_file="$2"
+    fi
+}
+
+
+[ $# -eq 0 ] || {
+    echo "$USAGE" >&2
+    exit 1
+}
 
 # source the variables file
 .  "$config_file"
@@ -95,7 +140,7 @@ fix_nginx_message() {
 
 # this function will stop Zimbra's nginx
 stop_nginx() {
-    su -c 'zmproxyctl stop; zmmailboxdctl stop' - "$zimbra_user" > /dev/null || {
+    su -c 'zmproxyctl stop; zmmailboxdctl stop' - "$zimbra_user" || {
         error "There were some error during stopping the Zimbra' nginx."
         fix_nginx_message
         cleanup
@@ -105,7 +150,7 @@ stop_nginx() {
 
 # and another one to start it
 start_nginx() {
-    su -c 'zmproxyctl start; zmmailboxdctl start' - "$zimbra_user" > /dev/null || {
+    su -c 'zmproxyctl start; zmmailboxdctl start' - "$zimbra_user" || {
         error "There were some error during starting the Zimbra' nginx."
         fix_nginx_message
         cleanup
@@ -113,22 +158,6 @@ start_nginx() {
     }
 }
 
-# --------------------------------------------------------------------
-# -- Usage -----------------------------------------------------------
-# --------------------------------------------------------------------
-
-# HELP?
-[ $# -eq 1 ] && {
-    if [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "help" ]; then
-        echo "$USAGE"
-        exit 0
-    fi
-}
-
-[ $# -eq 0 ] || {
-    echo "$USAGE" >&2
-    exit 1
-}
 
 # --------------------------------------------------------------------
 # -- Tests -----------------------------------------------------------
@@ -162,57 +191,52 @@ temp_dir=$( mktemp -d ) || {
     error "Cannot create temporary directory."
     exit 2
 }
-openssl_config_file="${temp_dir}/openssl.cnf"
-request_file="${temp_dir}/request.pem"
 
-# create the openssl config file
-echo "$openssl_config" > "$openssl_config_file"
 
 # --------------------------------------------------------------------
 # -- Obtaining the certificate ---------------------------------------
 # --------------------------------------------------------------------
 
-# create the certificate signing request [crs]
-openssl req -new -nodes -sha256 -outform der \
-    -config "$openssl_config_file" \
-    -subj "$cert_subject" \
-    -key "$zimbra_key" \
-    -out "$request_file" || {
-    error "Cannot create the certificate signing request."
-    cleanup
-    exit 3
-}
-
-# release the 443 port -- stop Zimbra' nginx
-stop_nginx
-
-# ----------------------------------------------------------
-# letsencrypt utility stores the obtained certificates in PWD,
-# so we must cd in the temp directory
-cd "$temp_dir"
-
-"$letsencrypt" certonly --standalone --csr "$request_file" > /dev/null 2>&1 || {
-    error "The certificate cannot be obtained with '$letsencrypt' tool."
+if [ "$renew_cert" == "no"]; then
+    
+    # release the 443 port -- stop Zimbra' nginx
+    stop_nginx
+    
+    # ----------------------------------------------------------
+    # letsencrypt utility stores the obtained certificates in PWD,
+    # so we must cd in the temp directory
+    
+    "$letsencrypt" certonly --standalone --email "$letsencrypt_email" -d "$CN"  || {
+        error "The certificate cannot be obtained with '$letsencrypt' tool."
+        start_nginx
+        cleanup
+        exit 4
+    }
+    
+    # cd  back -- which is not really neccessarry
+    cd - > /dev/null
+    # ----------------------------------------------------------
+    
+    # start Zimbra' nginx again
     start_nginx
-    cleanup
-    exit 4
-}
-
-# cd back -- which is not really neccessarry
-cd - > /dev/null
-# ----------------------------------------------------------
-
-# start Zimbra' nginx again
-start_nginx
-
+else
+    "$letsencrypt" renew
+fi
 
 # --------------------------------------------------------------------
 # -- Deploying the certificate ---------------------------------------
 # --------------------------------------------------------------------
 
-cert_file="${temp_dir}/${letsencrypt_issued_cert_file}"
-intermediate_CA_file="${temp_dir}/${letsencrypt_issued_intermediate_CA_file}"
-chain_file="${temp_dir}/chain.pem"
+cp $letsencrypt_genereated_key_file "$temp_dir/privkey.pem"
+cp $letsencrypt_issued_intermediate_CA_file "$temp_dir/chain.pem"
+cp $letsencrypt_issued_cert_file "$temp_dir/cert.pem"
+chmod -R "$zimbra_user":"$zimbra_user" $temp_dir
+
+cert_file="$temp_dir/privkey.pem"
+intermediate_CA_file="$temp_dir/chain.pem"
+zimbra_key="$temp_dir/privkey.pem"
+chain_file="${temp_dir}/zimbra_chain.pem"
+
 
 readable_file "$cert_file" || {
     error "The issued certificate file '$cert_file' isn't readable file. Maybe it was created with different name?"
@@ -230,20 +254,20 @@ readable_file "$intermediate_CA_file" || {
 cat "$root_CA_file" "$intermediate_CA_file" > "$chain_file"
 
 # verify it with Zimbra tool
-su -c "'$zmcertmgr' verifycrt comm '$zimbra_key' '$cert_file' '$chain_file'" - "$zimbra_user"   > /dev/null || {
+su -c "'$zmcertmgr' verifycrt comm '$zimbra_key' '$cert_file' '$chain_file'" - "$zimbra_user" || {
     error "Verification of the issued certificate with '$zmcertmgr' failed."
     exit 4
 }
 
 # install the certificate to Zimbra
-"$zmcertmgr" deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
+su -c "'$zmcertmgr' deploycrt comm '$cert_file' '$chain_file'" - "$zimbra_user" || {
     error "Installation of the issued certificate with '$zmcertmgr' failed."
     exit 4
 }
 
 
 # finally, restart the Zimbra
-service "$zimbra_service" restart > /dev/null || {
+service "$zimbra_service" restart || {
     error "Restarting zimbra service failed."
     exit 5
 }

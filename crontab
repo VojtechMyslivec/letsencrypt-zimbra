@@ -3,4 +3,4 @@
 # send a notification a day before the certificate will be obtained
 0 0 7 */2 * root /root/letsencrypt-zimbra/sendmail-notification.sh 1
 # obtain the certificate
-0 0 8 */2 * root /root/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh && /root/letsencrypt-zimbra/sendmail-notification-successful.sh
+0 0 8 */2 * root /root/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh --renew && /root/letsencrypt-zimbra/sendmail-notification-successful.sh
