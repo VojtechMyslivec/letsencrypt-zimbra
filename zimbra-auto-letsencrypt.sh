@@ -189,6 +189,16 @@ readable_file "$letsencrypt_issued_key_file" || {
     exit 2
 }
 
+readable_file "$letsencrypt_issued_cert_file" || {
+    error "Certificate '$letsencrypt_issued_cert_file' isn't readable file."
+        exit 2
+}
+
+readable_file "$letsencrypt_issued_chain_file" || {
+    error "Intermediate CA '$letsencrypt_issued_chain_file' isn't readable file."
+        exit 2
+}
+
 readable_file "$root_CA_file" || {
     error "The root CA certificate '$root_CA_file' isn't readable file."
     exit 2
@@ -244,13 +254,6 @@ chown -R "$zimbra_user":"$zimbra_user" $temp_dir
 zimbra_cert_file="$temp_dir/cert.pem"
 zimbra_chain_file="$temp_dir/zimbra_chain.pem"
 zimbra_key_file="$temp_dir/privkey.pem"
-
-
-readable_file "$letsencrypt_issued_chain_file" || {
-    error "The issued intermediate CA file '$letsencrypt_issued_chain_file' isn't readable file. Maybe it was created with different name?"
-    cleanup
-    exit 4
-}
 
 # verify it with Zimbra tool
 su -c "'$zmcertmgr' verifycrt comm '$zimbra_key_file' '$zimbra_cert_file' '$zimbra_chain_file'" - "$zimbra_user" || {
