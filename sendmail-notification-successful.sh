@@ -1,5 +1,5 @@
 #!/bin/sh
-email=""
+email="$2"
 sendmail="/opt/zimbra/postfix/sbin/sendmail"
 subject="Certificate has been renewed"
 message="Hello,
@@ -10,17 +10,23 @@ Sincerelly yours,
 cron"
 
 USAGE="USAGE
-    $0
+    $0 email_address
 
-    This simple script will send the email to e-mail '$email' via
-    '$sendmail' program."
+    This simple script will send the email to the specified
+    e-mail address via '$sendmail' program."
 
 [ $# -ne 0 ] && {
     echo "$USAGE" >&2
     exit 1
 }
 
-echo "Subject: $subject
-
-$message" | "$sendmail" "$email"
+[ $# -eq 1 ] && {
+    if [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "help" ]; then
+        echo "$USAGE" >&2
+        exit 1
+    else
+        echo "Subject: $subject
+        $message" | "$sendmail" "$email"
+    fi
+}
 

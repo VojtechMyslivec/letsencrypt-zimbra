@@ -9,16 +9,24 @@
 SCRIPTNAME=${0##*/}
 
 USAGE="USAGE
+
+    IMPORTANT NOTE:
+    if running from the shell you must cd to the script directory
+    if running from crontab you *must* pass the config path as
+    argument
+
     print this help:
     $SCRIPTNAME -h | --help | help
 
     get and deploy the certificate:
     $SCRIPTNAME
+
     get and deploy the certificate passing a custom config file:
     $SCRIPTNAME /path/to/letsencrypt-zimbra.conf
     
     renew the certificate:
     $SCRIPTNAME --renew
+
     renew the certificate passing  a custom config file:
     $SCRIPTNAME --renew /path/to/letsencrypt-zimbra.conf
 
@@ -27,23 +35,24 @@ USAGE="USAGE
     certification authority.
 
     The script will stop zimbra' services for a while and restart
-    them once the certificate is extended and deployed. If the
+    them once the certificate is generated/renewed and deployed. If the
     obtained certificate isn't valid after all, Zimbra will start
     with the old certificate unchanged.
 
     Suitable to be run via cron (you need to pass the config file path
-    to succesfully source the variables
+    to succesfully source the variables)
     
     Crontab example for autorenewal:
 
     # send a notification a week before the certificate will be obtained
-    0 0 1 */2 * root /root/letsencrypt-zimbra/sendmail-notification.sh 7
+    0 0 1 */2 * root /root/letsencrypt-zimbra/sendmail-notification.sh 7 your@email.com
     # send a notification a day before the certificate will be obtained
-    0 0 7 */2 * root /root/letsencrypt-zimbra/sendmail-notification.sh 1
+    0 0 7 */2 * root /root/letsencrypt-zimbra/sendmail-notification.sh 1 your@email.com
     # obtain the certificate
-    0 0 8 */2 * root /root/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh --renew /root/letsencrypt-zimbra/letsencrypt-zimbra.conf && /root/letsencrypt-zimbra/sendmail-notification-successful.sh
+    0 0 8 */2 * root /root/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh --renew /root/letsencrypt-zimbra/letsencrypt-zimbra.conf && /root/letsencrypt-zimbra/sendmail-notification-successful.sh your@email.com
 
-    Friendly notice: restarting Zimbra service take a while (1+ m).
+    Friendly notice: 
+    restarting Zimbra service take a while (1+ m).
 
     Depends on:
         zimbra
@@ -199,31 +208,29 @@ temp_dir=$( mktemp -d ) || {
 # -- Obtaining the certificate ---------------------------------------
 # --------------------------------------------------------------------
 
+# release the 443 port -- stop Zimbra' nginx
+    stop_nginx
+
+
 if [ "$renew_cert" == "no" ]; then
     
-    # release the 443 port -- stop Zimbra' nginx
-    stop_nginx
-    
-    # ----------------------------------------------------------
-    # letsencrypt utility stores the obtained certificates in PWD,
-    # so we must cd in the temp directory
-    
+    # generate a new certificate
     "$letsencrypt" certonly --standalone --agree-tos --text --email "$letsencrypt_email" -d "$CN"  || {
         error "The certificate cannot be obtained with '$letsencrypt' tool."
         start_nginx
         cleanup
         exit 4
     }
-    
-    # cd  back -- which is not really neccessarry
-    cd - > /dev/null
-    # ----------------------------------------------------------
-    
-    # start Zimbra' nginx again
-    start_nginx
+   
 else
+
+    # renew the certificate
     "$letsencrypt" renew --renew-by-default
+
 fi
+
+# start Zimbra' nginx again
+start_nginx
 
 # --------------------------------------------------------------------
 # -- Deploying the certificate ---------------------------------------
