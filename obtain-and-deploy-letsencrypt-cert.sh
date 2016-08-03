@@ -30,6 +30,18 @@ USAGE="USAGE
         letsencrypt-auto utility
         openssl"
 
+# --------------------------------------------------------------------
+# -- Get variables from config file ----------------------------------
+# --------------------------------------------------------------------
+
+while getopts f:t: opts; do
+    case ${opts} in
+        c) config_file=${OPTARG} ;;
+        *) config_file="letsencrypt-zimbra.conf" ;;
+    esac
+done
+
+.  "$config_file"
 
 # --------------------------------------------------------------------
 # -- Functions -------------------------------------------------------
@@ -137,19 +149,6 @@ readable_file "$root_CA_file" || {
     error "The root CA certificate '$root_CA_file' isn't readable file."
     exit 2
 }
-
-# --------------------------------------------------------------------
-# -- Get variables from config file ----------------------------------
-# --------------------------------------------------------------------
-
-while getopts f:t: opts; do
-    case ${opts} in
-        c) config_file=${OPTARG} ;;
-        *) config_file="letsencrypt-zimbra.conf" ;;
-    esac
-done
-
-.  "$config_file"
 
 # --------------------------------------------------------------------
 # -- Temporary files -------------------------------------------------
