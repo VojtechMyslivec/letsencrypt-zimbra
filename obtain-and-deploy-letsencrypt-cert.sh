@@ -88,12 +88,26 @@ information() {
     message "info" "$*"
 }
 
+# is $1 a readable ordinary file? (optionaly for user $2)
 readable_file() {
-    [ -f "$1" -a -r "$1" ]
+    if [ -z "${2:-}" ]; then
+        [ -f "$1" -a -r "$1" ]
+    else
+        su -c \
+          "[ -f '$1' -a -r '$1' ]" \
+          - "$2"
+    fi
 }
 
+# is $1 a executable ordinary file? (optionaly for user $2)
 executable_file() {
-    [ -f "$1" -a -x "$1" ]
+    if [ -z "${2:-}" ]; then
+        [ -f "$1" -a -x "$1" ]
+    else
+        su -c \
+          "[ -f '$1' -a -x '$1' ]" \
+          - "$2"
+    fi
 }
 
 cleanup() {
@@ -264,13 +278,26 @@ cert_file="${temp_dir}/${letsencrypt_issued_cert_file}"
 intermediate_CA_file="${temp_dir}/${letsencrypt_issued_intermediate_CA_file}"
 chain_file="${temp_dir}/chain.pem"
 
-readable_file "$cert_file" || {
+touch "$chain_file" || {
+    error "Cannot create a chain file '$chain_file'."
+    cleanup
+    exit 4
+}
+
+# change ownership to zimbra user
+chown -R "${zimbra_user}:" "$temp_dir" || {
+    error "Cannot change ownership of temp files to zimbra user."
+    cleanup
+    exit 4
+}
+
+readable_file "$cert_file" "$zimbra_user" || {
     error "The issued certificate file '$cert_file' isn't readable file. Maybe it was created with different name?"
     cleanup
     exit 4
 }
 
-readable_file "$intermediate_CA_file" || {
+readable_file "$intermediate_CA_file" "$zimbra_user" || {
     error "The issued intermediate CA file '$intermediate_CA_file' isn't readable file. Maybe it was created with different name?"
     cleanup
     exit 4
@@ -280,14 +307,18 @@ readable_file "$intermediate_CA_file" || {
 cat "$intermediate_CA_file" "$root_CA_file" > "$chain_file"
 
 # verify it with Zimbra tool
-"$zmcertmgr" verifycrt comm "$zimbra_key" "$cert_file" "$chain_file" > /dev/null || {
+su -c \
+  "'$zmcertmgr' verifycrt comm '$zimbra_key' '$cert_file' '$chain_file'" \
+  - "$zimbra_user" > /dev/null || {
     error "Verification of the issued certificate with '$zmcertmgr' failed."
     cleanup
     exit 4
 }
 
 # install the certificate to Zimbra
-"$zmcertmgr" deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
+su -c \
+  "'$zmcertmgr' deploycrt comm '$cert_file' '$chain_file'" \
+  - "$zimbra_user" > /dev/null || {
     error "Installation of the issued certificate with '$zmcertmgr' failed."
     cleanup
     exit 4
