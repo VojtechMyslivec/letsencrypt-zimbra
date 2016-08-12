@@ -12,3 +12,7 @@ You will probably find these files usefull when you want to move your self-signe
   - https://www.zimbra.com/
   - https://letsencrypt.org/
   - https://github.com/letsencrypt/letsencrypt
+
+## Best practices:
+  - Add `--staging` parameter to `letsencrypt-auto` tool to test and/or debug `obtain-and-deploy-letsencrypt-cert.sh` script.
+    - You can use prepared commented-out line in the script (presented in commit dc39984).
