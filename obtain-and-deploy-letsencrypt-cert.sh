@@ -261,12 +261,14 @@ cat "$root_CA_file" "$intermediate_CA_file" > "$chain_file"
 # verify it with Zimbra tool
 "$zmcertmgr" verifycrt comm "$zimbra_key" "$cert_file" "$chain_file" > /dev/null || {
     error "Verification of the issued certificate with '$zmcertmgr' failed."
+    cleanup
     exit 4
 }
 
 # install the certificate to Zimbra
 "$zmcertmgr" deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
     error "Installation of the issued certificate with '$zmcertmgr' failed."
+    cleanup
     exit 4
 }
 
@@ -274,6 +276,7 @@ cat "$root_CA_file" "$intermediate_CA_file" > "$chain_file"
 # finally, restart the Zimbra
 service "$zimbra_service" restart > /dev/null || {
     error "Restarting zimbra service failed."
+    cleanup
     exit 5
 }
 
