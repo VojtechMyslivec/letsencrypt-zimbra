@@ -215,6 +215,11 @@ stop_nginx
 # so we must cd in the temp directory
 cd "$temp_dir"
 
+# TODO implement parameters for
+#   - staging environment
+#   - non-batch/interactive mode
+# exchange the following 2 lines if you need to debug/test this script
+#"$letsencrypt" certonly --standalone --csr "$request_file" --staging || {
 "$letsencrypt" certonly --standalone --csr "$request_file" > /dev/null 2>&1 || {
     error "The certificate cannot be obtained with '$letsencrypt' tool."
     start_nginx
