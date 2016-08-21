@@ -50,6 +50,8 @@ zmcertmgr="${zimbra_bin_dir}/zmcertmgr"
 zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
 zimbra_key="${zimbra_ssl_dir}/commercial.key"
 
+# email for LE registration
+email="mail@example.cz"
 # common name in the certificate
 CN="mail.theajty.com"
 # subject in request -- does not matter for letsencrypt but must be there for openssl
@@ -218,9 +220,16 @@ cd "$temp_dir"
 # TODO implement parameters for
 #   - staging environment
 #   - non-batch/interactive mode
-# exchange the following 2 lines if you need to debug/test this script
-#"$letsencrypt" certonly --standalone --csr "$request_file" --staging || {
-"$letsencrypt" certonly --standalone --csr "$request_file" > /dev/null 2>&1 || {
+# exchange following lines if you need to debug or test this script:
+#"$letsencrypt" certonly \
+#  --staging \
+#  --standalone \
+#  --non-interactive --agred-tos \
+#  --email "$email" --csr "$request_file" || {
+"$letsencrypt" certonly \
+  --standalone \
+  --non-interactive --agred-tos --quiet \
+  --email "$email" --csr "$request_file" || {
     error "The certificate cannot be obtained with '$letsencrypt' tool."
     start_nginx
     cleanup
