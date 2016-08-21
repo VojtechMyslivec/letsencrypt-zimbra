@@ -19,11 +19,11 @@ USAGE="USAGE
 
     Suitable to be run via cron.
 
-    Friendly notice: restarting Zimbra service take a while (1+ m).
+    Friendly notice: restarting Zimbra service take a while (1 m+).
 
     Depends on:
         zimbra
-        letsencrypt-auto utility
+        letsencrypt-auto (certbot) utility
         openssl"
 
 # --------------------------------------------------------------------
@@ -31,7 +31,7 @@ USAGE="USAGE
 # --------------------------------------------------------------------
 # should be in config file o_O
 
-# letsencrypt tool
+# letsencrypt (certbot) tool
 letsencrypt="/root/letsencrypt/letsencrypt-auto"
 # the name of file which letsencrypt will generate
 letsencrypt_issued_cert_file="0000_cert.pem"
@@ -106,7 +106,7 @@ executable_file() {
 
 cleanup() {
     [ -d "$temp_dir" ] && {
-        rm -rf "$temp_dir" || {
+        rm -r "$temp_dir" || {
             warning "Cannot remove temporary directory '$temp_dir'. You should check it for private data."
         }
     }
@@ -198,7 +198,7 @@ echo "$openssl_config" > "$openssl_config_file"
 # -- Obtaining the certificate ---------------------------------------
 # --------------------------------------------------------------------
 
-# create the certificate signing request [crs]
+# create the certificate signing request [csr]
 openssl req -new -nodes -sha256 -outform der \
     -config "$openssl_config_file" \
     -subj "$cert_subject" \
@@ -213,7 +213,7 @@ openssl req -new -nodes -sha256 -outform der \
 stop_nginx
 
 # ----------------------------------------------------------
-# letsencrypt utility stores the obtained certificates in PWD,
+# letsencrypt utility stores the obtained certificates in PWD
 # so we must cd in the temp directory
 cd "$temp_dir"
 
