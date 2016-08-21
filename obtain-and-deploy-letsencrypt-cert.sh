@@ -2,6 +2,8 @@
 # author: Vojtech Myslivec <vojtech@xmyslivec.cz>
 # GPLv2 licence
 
+set -o nounset
+
 SCRIPTNAME=${0##*/}
 
 USAGE="USAGE
@@ -37,7 +39,8 @@ USAGE="USAGE
     Depends on:
         zimbra
         letsencrypt-auto (certbot) utility
-        openssl"
+        openssl
+        service - debian/ubuntu style"
 
 # --------------------------------------------------------------------
 # -- Variables -------------------------------------------------------
@@ -46,16 +49,22 @@ USAGE="USAGE
 
 # letsencrypt (certbot) tool
 letsencrypt="/opt/letsencrypt/letsencrypt-auto"
+
+# zimbra parameters
+zimbra_service="zimbra"
+zimbra_user="zimbra"
+zimbra_dir="/opt/zimbra"
+
+# root CA certificate - zimbra needs it
+root_CA_file="/opt/letsencrypt-zimbra/DSTRootCAX3.pem"
+
+# --------------------------------------------------------------------
+# rest should be kept unchanged
+
 # the name of file which letsencrypt will generate
 letsencrypt_issued_cert_file="0000_cert.pem"
 # intermediate CA
 letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
-# root CA
-root_CA_file="/opt/letsencrypt-zimbra/DSTRootCAX3.pem"
-
-zimbra_service="zimbra"
-zimbra_user="zimbra"
-zimbra_dir="/opt/zimbra"
 
 zimbra_bin_dir="${zimbra_dir}/bin"
 zmcertmgr="${zimbra_bin_dir}/zmcertmgr"
