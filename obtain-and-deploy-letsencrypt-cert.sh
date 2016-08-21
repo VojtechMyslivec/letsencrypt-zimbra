@@ -6,11 +6,24 @@ SCRIPTNAME=${0##*/}
 
 USAGE="USAGE
     $SCRIPTNAME -h | --help | help
-    $SCRIPTNAME
+    $SCRIPTNAME email FQDN...
 
     This script is used for extend the already-deployed zimbra
     (so-called) commercial certificate issued by Let's Encrypt
     certification authority.
+
+    Arguments:
+
+        -h | --help | help
+                Prints this message and exits.
+
+        email
+                Email to use for LE registration.
+
+        FQDN
+                One or more DNS names to use as common name
+                (or as alternative names more precisely)
+                in the certificate.
 
     The script will stop zimbra' services for a while and restart
     them once the certificate is extended and deployed. If the
@@ -32,13 +45,13 @@ USAGE="USAGE
 # should be in config file o_O
 
 # letsencrypt (certbot) tool
-letsencrypt="/root/letsencrypt/letsencrypt-auto"
+letsencrypt="/opt/letsencrypt/letsencrypt-auto"
 # the name of file which letsencrypt will generate
 letsencrypt_issued_cert_file="0000_cert.pem"
 # intermediate CA
 letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
 # root CA
-root_CA_file="/root/letsencrypt-zimbra/DSTRootCAX3.pem"
+root_CA_file="/opt/letsencrypt-zimbra/DSTRootCAX3.pem"
 
 zimbra_service="zimbra"
 zimbra_user="zimbra"
@@ -50,10 +63,6 @@ zmcertmgr="${zimbra_bin_dir}/zmcertmgr"
 zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
 zimbra_key="${zimbra_ssl_dir}/commercial.key"
 
-# email for LE registration
-email="mail@example.cz"
-# common name in the certificate
-CN="mail.theajty.com"
 # subject in request -- does not matter for letsencrypt but must be there for openssl
 cert_subject="/"
 # openssl config skeleton
@@ -70,9 +79,7 @@ basicConstraints = CA:FALSE
 keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 subjectAltName = @alt_names
 
-[alt_names]
-DNS.1 = $CN
-"
+[alt_names]"
 
 # --------------------------------------------------------------------
 # -- Functions -------------------------------------------------------
@@ -139,22 +146,42 @@ start_nginx() {
     }
 }
 
+# this function will constructs openssl csr config to stdout
+# arguments are used as SAN
+assemble_csr_config() {
+    local i=1
+    typeset -i i
+
+    echo "$openssl_config"
+
+    for arg; do
+        echo "DNS.${i} = ${arg}"
+        i+=1
+    done
+}
+
 # --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
 # --------------------------------------------------------------------
 
 # HELP?
-[ $# -eq 1 ] && {
+[ $# -ge 1 ] && {
     if [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "help" ]; then
         echo "$USAGE"
         exit 0
     fi
 }
 
-[ $# -eq 0 ] || {
+[ $# -lt 2 ] && {
     echo "$USAGE" >&2
     exit 1
 }
+
+# email for LE registration
+email="$1"
+
+# shift -- all other argumets are FQDNs
+shift
 
 # --------------------------------------------------------------------
 # -- Tests -----------------------------------------------------------
@@ -191,8 +218,8 @@ temp_dir=$( mktemp -d ) || {
 openssl_config_file="${temp_dir}/openssl.cnf"
 request_file="${temp_dir}/request.pem"
 
-# create the openssl config file
-echo "$openssl_config" > "$openssl_config_file"
+# create the openssl config file from script arguments
+assemble_csr_config "$@" > "$openssl_config_file"
 
 # --------------------------------------------------------------------
 # -- Obtaining the certificate ---------------------------------------
