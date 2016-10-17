@@ -3,7 +3,8 @@ Files to automate the deploy of letsencrypt certificates to Zimbra
 
 You will probably find these files useful when you want to move your self-signed Zimbra certificate to the [letsencrypt](https://letsencrypt.org/) valid one and automate the renewal of the certificate.
 
- - You'll need to have a working copy of the letsencrypt client and these scripts (simply run `git clone https://github.com/letsencrypt/letsencrypt && git clone https://github.com/penzoiders/zimbra-auto-letsencrypt.git`)
+ - You'll need to have CertBot isntalled on your system (needs EPEL): `yum -y install certbot`
+ - Clone this repo in your root folder (or wherever you want): `git clone https://github.com/penzoiders/zimbra-auto-letsencrypt.git`
  - Set your variables by editing `letsencrypt-zimbra.conf` file
  - cd to the script folder and run `./zimbra-auto-letsencrypt.sh`, sit back and relax while your server gets a fresh certificate and deploys (zimbra services will be restarted)
  - run `./zimbra-auto-letsencrypt.sh --help` for help and for a copy-paste-friendly hint to automate renewals using crontab
@@ -17,9 +18,9 @@ NOTE: Tested on Zimbra 8.7 and CentOS 7 host (will not work for Zimbra < 8.7 sin
   - Zimbra 8.7
   
 ## Tips:
-  - install CertBot on CentOS 7:
+  - install prerequisites on CentOS 7:
   
-  `yum install epel-release`
+  `yum install git epel-release`
   
   `yum install certbot`
   
@@ -33,9 +34,9 @@ NOTE: Tested on Zimbra 8.7 and CentOS 7 host (will not work for Zimbra < 8.7 sin
   
   `yum -y install python27 python27-devel python27-pip python27-setuptools python27-virtualenv --enablerepo=ius`
   
-  download and install Certbot with dependencies
+  download and install Certbot and other prerequisites
   
-  `yum -y install dialog libffi-devel mod_ssl openssl-devel python-devel python-pip python-tools python-virtualenv`
+  `yum -y install git dialog libffi-devel mod_ssl openssl-devel python-devel python-pip python-tools python-virtualenv`
   
   `wget https://dl.eff.org/certbot-auto -O /usr/bin/certbot`
   
