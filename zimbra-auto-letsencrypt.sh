@@ -251,7 +251,7 @@ start_nginx
 # -- Deploying the certificate ---------------------------------------
 # --------------------------------------------------------------------
 
-su -c "cp -r /opt/zimbra/ssl/zimbra /opt/zimbra/ssl/zimbra.'$timestamp'" - "$zimbra_user"
+su -c "cp -r /opt/zimbra/ssl/zimbra /opt/zimbra/ssl/zimbra.'$(date +%Y%m%d)'" - "$zimbra_user"
 
 cp '$letsencrypt_issued_key_file' /opt/zimbra/ssl/zimbra/ssl/commercial/commercial.key
 cp $letsencrypt_issued_fullchain_file "$temp_dir/cert.pem"
