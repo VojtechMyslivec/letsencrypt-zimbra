@@ -56,7 +56,7 @@ USAGE="USAGE
 
     Depends on:
         zimbra
-        letsencrypt-auto utility
+        certbot
         openssl"
 
 # --------------------------------------------------------------------
@@ -199,6 +199,11 @@ readable_file "$letsencrypt_issued_chain_file" || {
         exit 2
 }
 
+readable_file "$letsencrypt_issued_fullchain_file" || {
+    error "Certificate bundle '$letsencrypt_issued_fullchain_file' isn't readable file."
+        exit 2
+}
+
 readable_file "$root_CA_file" || {
     error "The root CA certificate '$root_CA_file' isn't readable file."
     exit 2
@@ -246,17 +251,21 @@ start_nginx
 # -- Deploying the certificate ---------------------------------------
 # --------------------------------------------------------------------
 
-cp $letsencrypt_issued_key_file "$temp_dir/privkey.pem"
-cp $letsencrypt_issued_cert_file "$temp_dir/cert.pem"
-cat "$root_CA_file" "$letsencrypt_issued_chain_file" > "${temp_dir}/zimbra_chain.pem"
+su -c "cp -r /opt/zimbra/ssl/zimbra /opt/zimbra/ssl/zimbra.'$timestamp'" - "$zimbra_user"
+
+cp '$letsencrypt_issued_key_file' /opt/zimbra/ssl/zimbra/ssl/commercial/commercial.key
+cp $letsencrypt_issued_fullchain_file "$temp_dir/cert.pem"
+cat "$letsencrypt_issued_chain_file" "$root_CA_file" > "${temp_dir}/zimbra_chain.pem"
+
 chown -R "$zimbra_user":"$zimbra_user" $temp_dir
+chown -R "$zimbra_user":"$zimbra_user" /opt/zimbra/ssl/zimbra/ssl/commercial/commercial.key
 
 zimbra_cert_file="$temp_dir/cert.pem"
 zimbra_chain_file="$temp_dir/zimbra_chain.pem"
-zimbra_key_file="$temp_dir/privkey.pem"
+zimbra_key_file="/opt/zimbra/ssl/zimbra/ssl/commercial/commercial.key"
 
 # verify it with Zimbra tool
-su -c "'$zmcertmgr' verifycrt comm '$zimbra_key_file' '$zimbra_cert_file' '$zimbra_chain_file'" - "$zimbra_user" || {
+su -c "'$zmcertmgr' verifycrt comm '$zimbra_key_file' '$zimbra_cert_file'" - "$zimbra_user" || {
     error "Verification of the issued certificate with '$zmcertmgr' failed."
     exit 4
 }
