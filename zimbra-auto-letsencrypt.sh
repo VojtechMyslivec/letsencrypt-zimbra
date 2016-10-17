@@ -262,7 +262,7 @@ chown -R "$zimbra_user":"$zimbra_user" /opt/zimbra/ssl/zimbra/commercial/commerc
 
 zimbra_cert_file="$temp_dir/cert.pem"
 zimbra_chain_file="$temp_dir/zimbra_chain.pem"
-zimbra_key_file="/opt/zimbra/ssl/zimbra/ssl/commercial/commercial.key"
+zimbra_key_file="/opt/zimbra/ssl/zimbra/commercial/commercial.key"
 
 # verify it with Zimbra tool
 su -c "'$zmcertmgr' verifycrt comm '$zimbra_key_file' '$zimbra_cert_file'" - "$zimbra_user" || {
