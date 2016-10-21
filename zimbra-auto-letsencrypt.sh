@@ -148,7 +148,6 @@ stop_nginx() {
     su -c 'zmproxyctl stop; zmmailboxdctl stop' - "$zimbra_user" || {
         error "There were some error during stopping the Zimbra' nginx."
         fix_nginx_message
-        cleanup
         exit 3
     }
 }
@@ -158,7 +157,6 @@ start_nginx() {
     su -c 'zmproxyctl start; zmmailboxdctl start' - "$zimbra_user" || {
         error "There were some error during starting the Zimbra' nginx."
         fix_nginx_message
-        cleanup
         exit 3
     }
 }
@@ -222,7 +220,6 @@ if [ "$renew_cert" == "no" ]; then
     "$letsencrypt" certonly --standalone --agree-tos --text --email "$letsencrypt_email" -d "$CN"  || {
         error "The certificate cannot be obtained with '$letsencrypt' tool."
         start_nginx
-        cleanup
         exit 4
     }
    
