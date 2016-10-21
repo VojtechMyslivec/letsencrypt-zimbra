@@ -184,25 +184,29 @@ executable_file "$zmcertmgr" || {
     exit 2
 }
 
-readable_file "$letsencrypt_issued_key_file" || {
+if [ $renew_cert = "yes" ]; then
+
+  readable_file "$letsencrypt_issued_key_file" || {
     error "Private key '$letsencrypt_issued_key_file' isn't readable file."
     exit 2
-}
+  }
 
-readable_file "$letsencrypt_issued_cert_file" || {
+  readable_file "$letsencrypt_issued_cert_file" || {
     error "Certificate '$letsencrypt_issued_cert_file' isn't readable file."
-        exit 2
-}
+    exit 2
+  }
 
-readable_file "$letsencrypt_issued_chain_file" || {
+  readable_file "$letsencrypt_issued_chain_file" || {
     error "Intermediate CA '$letsencrypt_issued_chain_file' isn't readable file."
         exit 2
-}
+  }
 
-readable_file "$letsencrypt_issued_fullchain_file" || {
+  readable_file "$letsencrypt_issued_fullchain_file" || {
     error "Certificate bundle '$letsencrypt_issued_fullchain_file' isn't readable file."
         exit 2
-}
+  }
+
+fi
 
 readable_file "$root_CA_file" || {
     error "The root CA certificate '$root_CA_file' isn't readable file."
@@ -253,12 +257,14 @@ start_nginx
 
 su -c "cp -r /opt/zimbra/ssl/zimbra /opt/zimbra/ssl/zimbra.'$(date +%Y%m%d)'" - "$zimbra_user"
 
+cp "$root_CA_file" /opt/zimbra/ssl/zimbra/commercial/commercial_ca.crt
 cp "$letsencrypt_issued_key_file" /opt/zimbra/ssl/zimbra/commercial/commercial.key
 cp "$letsencrypt_issued_fullchain_file" "$temp_dir/cert.pem"
 cat "$letsencrypt_issued_chain_file" "$root_CA_file" > "${temp_dir}/zimbra_chain.pem"
 
 chown -R "$zimbra_user":"$zimbra_user" $temp_dir
 chown -R "$zimbra_user":"$zimbra_user" /opt/zimbra/ssl/zimbra/commercial/commercial.key
+chown -R "$zimbra_user":"$zimbra_user" /opt/zimbra/ssl/zimbra/commercial/commercial_ca.crt
 
 zimbra_cert_file="$temp_dir/cert.pem"
 zimbra_chain_file="$temp_dir/zimbra_chain.pem"
