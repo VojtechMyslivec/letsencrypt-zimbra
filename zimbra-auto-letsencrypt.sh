@@ -257,10 +257,10 @@ start_nginx
 
 su -c "cp -r /opt/zimbra/ssl/zimbra /opt/zimbra/ssl/zimbra.'$(date +%Y%m%d)'" - "$zimbra_user"
 
-cp "$root_CA_file" /opt/zimbra/ssl/zimbra/commercial/commercial_ca.crt
 cp "$letsencrypt_issued_key_file" /opt/zimbra/ssl/zimbra/commercial/commercial.key
 cp "$letsencrypt_issued_fullchain_file" "$temp_dir/cert.pem"
 cat "$letsencrypt_issued_chain_file" "$root_CA_file" > "${temp_dir}/zimbra_chain.pem"
+cp "${temp_dir}/zimbra_chain.pem" /opt/zimbra/ssl/zimbra/commercial/commercial_ca.crt
 
 chown -R "$zimbra_user":"$zimbra_user" $temp_dir
 chown -R "$zimbra_user":"$zimbra_user" /opt/zimbra/ssl/zimbra/commercial/commercial.key
