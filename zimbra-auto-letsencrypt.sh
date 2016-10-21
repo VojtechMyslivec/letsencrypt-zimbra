@@ -257,7 +257,7 @@ su -c "'$zmcertmgr' verifycrt comm" - "$zimbra_user" || {
 }
 
 # install the certificate to Zimbra
-su -c "'$zmcertmgr' deploycrt comm '$zimbra_cert_file'" - "$zimbra_user" || {
+su -c "'$zmcertmgr' deploycrt comm" - "$zimbra_user" || {
     error "Installation of the issued certificate with '$zmcertmgr' failed."
     exit 4
 }
