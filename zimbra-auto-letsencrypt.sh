@@ -134,12 +134,6 @@ executable_file() {
     [ -f "$1" -a -x "$1" ]
 }
 
-cleanup() {
-    [ -d "$temp_dir" ] && {
-        rm -rf "$temp_dir" || {
-            warning "Cannot remove temporary directory '$temp_dir'. You should check it for private data."
-        }
-    }
 }
 
 # just a kindly message how to fix stopped nginx
@@ -213,15 +207,6 @@ readable_file "$root_CA_file" || {
     exit 2
 }
 
-# --------------------------------------------------------------------
-# -- Temporary files -------------------------------------------------
-# --------------------------------------------------------------------
-
-temp_dir=$( mktemp -d ) || {
-    error "Cannot create temporary directory."
-    exit 2
-}
-
 
 # --------------------------------------------------------------------
 # -- Obtaining the certificate ---------------------------------------
@@ -258,20 +243,15 @@ start_nginx
 su -c "cp -r /opt/zimbra/ssl/zimbra /opt/zimbra/ssl/zimbra.'$(date +%Y%m%d)'" - "$zimbra_user"
 
 cp "$letsencrypt_issued_key_file" /opt/zimbra/ssl/zimbra/commercial/commercial.key
-cp "$letsencrypt_issued_fullchain_file" "$temp_dir/cert.pem"
-cat "$letsencrypt_issued_chain_file" "$root_CA_file" > "${temp_dir}/zimbra_chain.pem"
-cp "${temp_dir}/zimbra_chain.pem" /opt/zimbra/ssl/zimbra/commercial/commercial_ca.crt
+cp "$letsencrypt_issued_fullchain_file" /opt/zimbra/ssl/zimbra/commercial/commercial.crt
+cat "$letsencrypt_issued_chain_file" "$root_CA_file" > /opt/zimbra/ssl/zimbra/commercial/commercial_ca.crt
 
-chown -R "$zimbra_user":"$zimbra_user" $temp_dir
 chown -R "$zimbra_user":"$zimbra_user" /opt/zimbra/ssl/zimbra/commercial/commercial.key
 chown -R "$zimbra_user":"$zimbra_user" /opt/zimbra/ssl/zimbra/commercial/commercial_ca.crt
-
-zimbra_cert_file="$temp_dir/cert.pem"
-zimbra_chain_file="$temp_dir/zimbra_chain.pem"
-zimbra_key_file="/opt/zimbra/ssl/zimbra/commercial/commercial.key"
+chown -R "$zimbra_user":"$zimbra_user" /opt/zimbra/ssl/zimbra/commercial/commercial.crt
 
 # verify it with Zimbra tool
-su -c "'$zmcertmgr' verifycrt comm '$zimbra_key_file' '$zimbra_cert_file'" - "$zimbra_user" || {
+su -c "'$zmcertmgr' verifycrt comm" - "$zimbra_user" || {
     error "Verification of the issued certificate with '$zmcertmgr' failed."
     exit 4
 }
@@ -289,10 +269,4 @@ service "$zimbra_service" restart || {
     exit 5
 }
 
-
-# --------------------------------------------------------------------
-# -- Cleanup ---------------------------------------------------------
-# --------------------------------------------------------------------
-
-cleanup
 
