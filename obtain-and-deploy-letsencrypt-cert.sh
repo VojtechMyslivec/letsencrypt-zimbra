@@ -260,11 +260,11 @@ cd "$temp_dir"
 #"$letsencrypt" certonly \
 #  --staging \
 #  --standalone \
-#  --non-interactive --agred-tos \
+#  --non-interactive --agree-tos \
 #  --email "$email" --csr "$request_file" || {
 "$letsencrypt" certonly \
   --standalone \
-  --non-interactive --agred-tos --quiet \
+  --non-interactive --quiet --agree-tos \
   --email "$email" --csr "$request_file" || {
     error "The certificate cannot be obtained with '$letsencrypt' tool."
     start_nginx
