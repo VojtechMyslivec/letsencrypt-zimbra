@@ -29,29 +29,10 @@ USAGE="USAGE
 # --------------------------------------------------------------------
 # -- Variables -------------------------------------------------------
 # --------------------------------------------------------------------
-# should be in config file o_O
-
-# letsencrypt tool
-letsencrypt="/root/letsencrypt/letsencrypt-auto"
-# the name of file which letsencrypt will generate
-letsencrypt_issued_cert_file="0000_cert.pem"
-# intermediate CA
-letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
+letsencrypt_zimbra_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$letsencrypt_zimbra_dir/letsencrypt-zimbra.cfg"
 # root CA
-root_CA_file="/root/letsencrypt-zimbra/DSTRootCAX3.pem"
-
-zimbra_service="zimbra"
-zimbra_user="zimbra"
-zimbra_dir="/opt/zimbra"
-
-zimbra_bin_dir="${zimbra_dir}/bin"
-zmcertmgr="${zimbra_bin_dir}/zmcertmgr"
-
-zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
-zimbra_key="${zimbra_ssl_dir}/commercial.key"
-
-# common name in the certificate
-CN="mail.theajty.com"
+root_CA_file="$letsencrypt_zimbra_dir/DSTRootCAX3.pem"
 # subject in request -- does not matter for letsencrypt but must be there for openssl
 cert_subject="/"
 # openssl config skeleton
@@ -272,9 +253,8 @@ cat "$root_CA_file" "$intermediate_CA_file" > "$chain_file"
     exit 4
 }
 
-
 # finally, restart the Zimbra
-service "$zimbra_service" restart > /dev/null || {
+su -c "zmcontrol start" - "$zimbra_user" || {
     error "Restarting zimbra service failed."
     cleanup
     exit 5

@@ -1,14 +1,4 @@
 #!/bin/bash
-email=""
-sendmail="/opt/zimbra/postfix/sbin/sendmail"
-subject="Certificate renewal in $1 day(s)"
-message="Hello,
-this is just a kindly reminder that a letsencrypt-zimbra tool
-will try to obtain and install new zimbra certificate in $1 day(s).
-
-Sincerelly yours,
-cron"
-
 USAGE="USAGE
     $0 days
 
@@ -26,6 +16,8 @@ USAGE="USAGE
     exit 1
 }
 
+letsencrypt_zimbra_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$letsencrypt_zimbra_dir/letsencrypt-zimbra.cfg"
 
 echo "Subject: $subject
 
