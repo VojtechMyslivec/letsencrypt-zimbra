@@ -26,7 +26,6 @@ letsencrypt-zimbra"
 CN="mail.theajty.com"
 letsencrypt="/root/letsencrypt/letsencrypt-auto"
 
-zimbra_service="zimbra"
 zimbra_user="zimbra"
 zimbra_dir="/opt/zimbra"
 
