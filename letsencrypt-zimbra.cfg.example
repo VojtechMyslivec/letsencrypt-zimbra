@@ -1,0 +1,43 @@
+### mail variables ###
+email="" # e.g. admin@zimbra.example.com
+sendmail="/opt/zimbra/postfix/sbin/sendmail" # 8.7 and later: /opt/zimbra/common/sbin/sendmail
+
+### reminder mail ###
+subject="Certificate renewal in $1 day(s)"
+message="Hello,
+this is just a kindly reminder that a letsencrypt-zimbra tool
+will try to obtain and install new zimbra certificate in $1 day(s).
+
+Sincerelly yours,
+letsencrypt-zimbra"
+
+### success mail ###
+subject="Certificate has been renewed"
+message="Hello,
+this is just a kindly reminder that your letsencrypt-zimbra tool
+renewed successfully your Zimbra certificate!
+
+Sincerelly yours,
+letsencrypt-zimbra"
+
+
+### letsencrypt tool ###
+# common name in the certificate
+CN="mail.theajty.com"
+letsencrypt="/root/letsencrypt/letsencrypt-auto"
+
+zimbra_service="zimbra"
+zimbra_user="zimbra"
+zimbra_dir="/opt/zimbra"
+
+zimbra_bin_dir="${zimbra_dir}/bin"
+zmcertmgr="${zimbra_bin_dir}/zmcertmgr"
+
+zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
+zimbra_key="${zimbra_ssl_dir}/commercial.key"
+
+
+# the name of file which letsencrypt will generate
+letsencrypt_issued_cert_file="0000_cert.pem"
+# intermediate CA
+letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
