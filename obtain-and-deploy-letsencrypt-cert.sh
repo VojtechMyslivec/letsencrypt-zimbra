@@ -45,32 +45,8 @@ USAGE="USAGE
 # --------------------------------------------------------------------
 # -- Variables -------------------------------------------------------
 # --------------------------------------------------------------------
-# should be in config file o_O
-
-# letsencrypt (certbot) tool
-letsencrypt="/opt/letsencrypt/letsencrypt-auto"
-
-# zimbra parameters
-zimbra_service="zimbra"
-zimbra_user="zimbra"
-zimbra_dir="/opt/zimbra"
-
-# root CA certificate - zimbra needs it
-root_CA_file="/opt/letsencrypt-zimbra/DSTRootCAX3.pem"
-
-# --------------------------------------------------------------------
-# rest should be kept unchanged
-
-# the name of file which letsencrypt will generate
-letsencrypt_issued_cert_file="0000_cert.pem"
-# intermediate CA
-letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
-
-zimbra_bin_dir="${zimbra_dir}/bin"
-zmcertmgr="${zimbra_bin_dir}/zmcertmgr"
-
-zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
-zimbra_key="${zimbra_ssl_dir}/commercial.key"
+letsencrypt_zimbra_dir="${0%/*}"
+source "$letsencrypt_zimbra_dir/letsencrypt-zimbra.cfg"
 
 # subject in request -- does not matter for letsencrypt but must be there for openssl
 cert_subject="/"
