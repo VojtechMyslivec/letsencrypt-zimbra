@@ -31,6 +31,11 @@ USAGE="USAGE
 
 # letsencrypt tool
 letsencrypt="/opt/letsencrypt/letsencrypt-auto"
+# email for LE registration
+email="mail@example.cz"
+# common name in the certificate
+CN="gitlab.example.cz"
+
 # the name of file which letsencrypt will generate
 letsencrypt_issued_cert_file="0000_cert.pem"
 # intermediate CA
@@ -208,7 +213,10 @@ stop_nginx
 # so we must cd in the temp directory
 cd "$temp_dir"
 
-"$letsencrypt" certonly --standalone --csr "$request_file" > /dev/null 2>&1 || {
+"$letsencrypt" certonly \
+  --standalone \
+  --non-interactive --quiet --agree-tos \
+  --email "$email" --csr "$request_file" || {
     error "The certificate cannot be obtained with '$letsencrypt' tool."
     start_nginx
     cleanup
