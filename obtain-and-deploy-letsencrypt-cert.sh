@@ -46,7 +46,7 @@ USAGE="USAGE
 # -- Variables -------------------------------------------------------
 # --------------------------------------------------------------------
 letsencrypt_zimbra_dir="${0%/*}"
-source "$letsencrypt_zimbra_dir/letsencrypt-zimbra.cfg"
+source "${letsencrypt_zimbra_dir}/letsencrypt-zimbra.cfg"
 
 # subject in request -- does not matter for letsencrypt but must be there for openssl
 cert_subject="/"
