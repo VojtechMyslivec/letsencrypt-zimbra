@@ -2,6 +2,8 @@
 # author: Vojtech Myslivec <vojtech@xmyslivec.cz>
 # GPLv2 licence
 
+set -o nounset
+
 SCRIPTNAME=${0##*/}
 
 USAGE="USAGE
@@ -31,17 +33,21 @@ USAGE="USAGE
 
 # letsencrypt tool
 letsencrypt="/opt/letsencrypt/letsencrypt-auto"
+# root CA
+root_CA_file="/opt/letsencrypt-gitlab/DSTRootCAX3.pem"
+
 # email for LE registration
 email="mail@example.cz"
 # common name in the certificate
 CN="gitlab.example.cz"
 
+# --------------------------------------------------------------------
+# rest should be kept unchanged
+
 # the name of file which letsencrypt will generate
 letsencrypt_issued_cert_file="0000_cert.pem"
 # intermediate CA
 letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
-# root CA
-root_CA_file="/opt/letsencrypt-gitlab/DSTRootCAX3.pem"
 
 # gitlab controller
 gitlab_ctl="gitlab-ctl"
@@ -50,11 +56,9 @@ gitlab_sv_ctl="/opt/gitlab/embedded/bin/sv"
 
 # this is the server certificate with CA together -- alias chain
 ssl_dir="/etc/ssl/private"
-gitlab_cert="${ssl_dir}/chain_rsa_vyvoj.meteocentrum.cz.pem"
-gitlab_key="${ssl_dir}/key_rsa_vyvoj.meteocentrum.cz.pem"
+gitlab_cert="${ssl_dir}/chain_rsa_${CN}.pem"
+gitlab_key="${ssl_dir}/key_rsa_${CN}.pem"
 
-# common name in the certificate
-CN="vyvoj.meteocentrum.cz"
 # subject in request -- does not matter for letsencrypt but must be there for openssl
 cert_subject="/"
 # openssl config skeleton
@@ -285,4 +289,3 @@ mv "$chain_file" "$gitlab_cert" || {
 # --------------------------------------------------------------------
 
 cleanup
-
