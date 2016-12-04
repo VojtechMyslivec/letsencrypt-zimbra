@@ -1,0 +1,50 @@
+## letsencrypt-zimbra.cfg
+#
+# A configuration file - shell script - with variables
+# this file is sourced by other scripts
+
+# letsencrypt tool =========================================
+letsencrypt="/opt/certbot/letsencrypt-auto"
+
+zimbra_service="zimbra"
+zimbra_user="zimbra"
+zimbra_dir="/opt/zimbra"
+
+zimbra_bin_dir="${zimbra_dir}/bin"
+zmcontrol="${zimbra_dir}/zmcontrol"
+zmcertmgr="${zimbra_bin_dir}/zmcertmgr"
+
+zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
+zimbra_key="${zimbra_ssl_dir}/commercial.key"
+
+
+# the name of file which letsencrypt will generate
+letsencrypt_issued_cert_file="0000_cert.pem"
+# intermediate CA
+letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
+
+# root CA certificate - zimbra needs it
+root_CA_file="${letsencrypt_zimbra_dir}/DSTRootCAX3.pem"
+
+
+# mail variables ==========================================
+# 8.7 and later: "${zimbra_dir}/common/sbin/sendmail"
+sendmail="${zimbra_dir}/postfix/sbin/sendmail"
+
+### reminder mail ###
+subject="Certificate renewal in ${1:-x} day(s)"
+message="Hello,
+this is just a kindly reminder that a letsencrypt-zimbra tool
+will try to obtain and install new zimbra certificate in ${1:-x} day(s).
+
+Sincerelly yours,
+letsencrypt-zimbra"
+
+### success mail ###
+subject="Certificate has been renewed"
+message="Hello,
+this is just a kindly reminder that your letsencrypt-zimbra tool
+renewed successfully your Zimbra certificate!
+
+Sincerelly yours,
+letsencrypt-zimbra"
