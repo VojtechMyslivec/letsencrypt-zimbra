@@ -11,6 +11,7 @@ zimbra_user="zimbra"
 zimbra_dir="/opt/zimbra"
 
 zimbra_bin_dir="${zimbra_dir}/bin"
+zmcontrol="${zimbra_bin_dir}/zmcontrol"
 zmcertmgr="${zimbra_bin_dir}/zmcertmgr"
 
 zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
