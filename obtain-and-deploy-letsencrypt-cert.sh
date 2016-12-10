@@ -13,7 +13,7 @@ SCRIPTNAME=${0##*/}
 
 USAGE="USAGE
     $SCRIPTNAME -h | --help | help
-    $SCRIPTNAME email FQDN...
+    $SCRIPTNAME
 
     This script is used for extend the already-deployed zimbra
     (so-called) commercial certificate issued by Let's Encrypt
@@ -26,14 +26,6 @@ USAGE="USAGE
 
         -h | --help | help
                 Prints this message and exits.
-
-        email
-                Email to use for LE registration.
-
-        FQDN
-                One or more DNS names to use as common name
-                (or as alternative names more precisely)
-                in the certificate.
 
     The script will stop zimbra' services for a while and restart
     them once the certificate is extended and deployed. If the
@@ -160,24 +152,16 @@ subjectAltName = @alt_names
 # -- Usage -----------------------------------------------------------
 # --------------------------------------------------------------------
 
-# HELP?
-[ $# -ge 1 ] && {
+if [ $# -ne 0 ]; then
+    # HELP?
     if [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "help" ]; then
         echo "$USAGE"
         exit 0
     fi
-}
 
-[ $# -lt 2 ] && {
     echo "$USAGE" >&2
     exit 1
-}
-
-# email for LE registration
-email="$1"
-
-# shift -- all other argumets are FQDNs
-shift
+fi
 
 # --------------------------------------------------------------------
 # -- Tests -----------------------------------------------------------
@@ -214,8 +198,8 @@ temp_dir=$( mktemp -d ) || {
 openssl_config_file="${temp_dir}/openssl.cnf"
 request_file="${temp_dir}/request.pem"
 
-# create the openssl config file from script arguments
-assemble_csr_config "$@" > "$openssl_config_file"
+# create the openssl config file from common_names array
+assemble_csr_config "${common_names[@]}" > "$openssl_config_file"
 
 # --------------------------------------------------------------------
 # -- Obtaining the certificate ---------------------------------------
@@ -318,4 +302,3 @@ cat "$intermediate_CA_file" "$root_CA_file" > "$chain_file"
 # --------------------------------------------------------------------
 
 cleanup
-

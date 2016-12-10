@@ -3,6 +3,24 @@
 # A configuration file - shell script - with variables
 # this file is sourced by other scripts
 
+# letsencrypt-zimbra parameters ============================
+# Email to use for LE registration and to send the notifications
+email="admin@example.com"
+
+# One or more FQDNS names to use as common name (or as
+# alternative names more precisely) in the certificate.
+#
+# The letsencrypt won't let you to obtain wildcard certificate
+# so use all your needed (and used) DNS names for the server.
+#
+# Please note that this variable is a bash array, so do not forget to
+# use parantheses
+#
+# example: one CN
+common_names=( "example.com" )
+# example: several CNs
+#common_names=( "example.com" "mail.example.com" "example.cz" )
+
 # letsencrypt tool =========================================
 letsencrypt="/opt/certbot/letsencrypt-auto"
 
