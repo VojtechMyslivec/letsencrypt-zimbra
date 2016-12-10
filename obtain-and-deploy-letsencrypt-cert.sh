@@ -14,6 +14,9 @@ USAGE="USAGE
     (so-called) commercial certificate issued by Let's Encrypt
     certification authority.
 
+    It reads its configuration file letsencrypt-zimbra.cfg which
+    must be located in the same directory as this script.
+
     Arguments:
 
         -h | --help | help
@@ -40,30 +43,6 @@ USAGE="USAGE
         zimbra
         letsencrypt-auto (certbot) utility
         openssl"
-
-# --------------------------------------------------------------------
-# -- Variables -------------------------------------------------------
-# --------------------------------------------------------------------
-letsencrypt_zimbra_dir="${0%/*}"
-source "${letsencrypt_zimbra_dir}/letsencrypt-zimbra.cfg"
-
-# subject in request -- does not matter for letsencrypt but must be there for openssl
-cert_subject="/"
-# openssl config skeleton
-#  it is important to have an alt_names section there!
-openssl_config="
-[req]
-distinguished_name = req_distinguished_name
-req_extensions = v3_req
-
-[req_distinguished_name]
-[ v3_req ]
-
-basicConstraints = CA:FALSE
-keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-subjectAltName = @alt_names
-
-[alt_names]"
 
 # --------------------------------------------------------------------
 # -- Functions -------------------------------------------------------
@@ -143,6 +122,34 @@ assemble_csr_config() {
         i+=1
     done
 }
+
+# --------------------------------------------------------------------
+# -- Variables -------------------------------------------------------
+# --------------------------------------------------------------------
+letsencrypt_zimbra_dir="${0%/*}"
+letsencrypt_zimbra_config="${letsencrypt_zimbra_dir}/letsencrypt-zimbra.cfg"
+source "$letsencrypt_zimbra_config" || {
+    error "Can not source config file '$letsencrypt_zimbra_config'"
+    exit 1
+}
+
+# subject in request -- does not matter for letsencrypt but must be there for openssl
+cert_subject="/"
+# openssl config skeleton
+#  it is important to have an alt_names section there!
+openssl_config="
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+
+[req_distinguished_name]
+[ v3_req ]
+
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = @alt_names
+
+[alt_names]"
 
 # --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
