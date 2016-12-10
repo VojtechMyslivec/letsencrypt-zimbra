@@ -34,13 +34,12 @@ USAGE="USAGE
 
     Suitable to be run via cron.
 
-    Friendly notice: restarting Zimbra service take a while (1 m+).
+    Friendly notice: restarting Zimbra take a while (1 m+).
 
     Depends on:
         zimbra
         letsencrypt-auto (certbot) utility
-        openssl
-        service - debian/ubuntu style"
+        openssl"
 
 # --------------------------------------------------------------------
 # -- Variables -------------------------------------------------------
