@@ -167,6 +167,24 @@ fi
 # -- Tests -----------------------------------------------------------
 # --------------------------------------------------------------------
 
+# check simple email format
+[[ "$email" =~ ^[^[:space:]]+@[^[:space:]]+\.[^[:space:]]+$ ]] || {
+    error "email '$email' is in wrong format - use user@domain.tld"
+    exit 2
+}
+
+# check that common_names is an array
+declare -p common_names 2> /dev/null \
+  | grep -q '^declare -a ' || {
+    error "parameter common_names must be an array"
+    exit 2
+}
+# check that common_names have at least 1 item
+[ ${#common_names[@]} -gt 0 ] || {
+    error "array common_names must have at least 1 item"
+    exit 2
+}
+
 executable_file "$letsencrypt" || {
     error "Letsencrypt tool '$letsencrypt' isn't executable file."
     exit 2
