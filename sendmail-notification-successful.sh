@@ -1,9 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 USAGE="USAGE
     $0
 
-    This simple script will send the email to e-mail '$email' via
-    '$sendmail' program."
+    This simple script will send an e-mail to 'email' address via
+    'sendmail' program.
+
+    The 'email' and 'sendmail' are specified in letsencrypt-zimbra
+    config file (see main script' help)."
 
 [ $# -ne 0 ] && {
     echo "$USAGE" >&2
@@ -13,7 +16,6 @@ USAGE="USAGE
 letsencrypt_zimbra_dir="${0%/*}"
 source "$letsencrypt_zimbra_dir/letsencrypt-zimbra.cfg"
 
-echo "Subject: $subject
+echo "Subject: $success_subject
 
-$message" | "$sendmail" "$email"
-
+$success_message" | "$sendmail" "$email"
