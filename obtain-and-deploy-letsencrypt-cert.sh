@@ -1,7 +1,12 @@
 #!/bin/bash
-# author: Vojtech Myslivec <vojtech@xmyslivec.cz>
-# GPLv2 licence
-
+## letsencrypt-zimbra
+#
+# Author:   Vojtech Myslivec <vojtech@xmyslivec.cz>
+#           and others
+# License:  GPLv2
+# Web:      https://github.com/VojtechMyslivec/letsencrypt-zimbra
+#
+# --------------------------------------------------------------------
 set -o nounset
 
 SCRIPTNAME=${0##*/}
