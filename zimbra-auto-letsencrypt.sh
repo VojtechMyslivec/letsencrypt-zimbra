@@ -134,8 +134,6 @@ executable_file() {
     [ -f "$1" -a -x "$1" ]
 }
 
-}
-
 # just a kindly message how to fix stopped nginx
 fix_nginx_message() {
     echo "        You must probably fix it with:
