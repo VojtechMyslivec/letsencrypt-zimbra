@@ -101,7 +101,7 @@ renew_cert="no"
 
 
 # source the variables file
-.  "$config_file"
+source  "$config_file"
 
 # --------------------------------------------------------------------
 # -- Functions -------------------------------------------------------
@@ -237,28 +237,28 @@ start_nginx
 
 su -c "cp -r /opt/zimbra/ssl/zimbra /opt/zimbra/ssl/zimbra.'$(date +%Y%m%d)'" - "$zimbra_user"
 
-cp "$letsencrypt_issued_key_file" /opt/zimbra/ssl/zimbra/commercial/commercial.key
-cp "$letsencrypt_issued_fullchain_file" /opt/zimbra/ssl/zimbra/commercial/commercial.crt
-cat "$letsencrypt_issued_chain_file" "$root_CA_file" > /opt/zimbra/ssl/zimbra/commercial/commercial_ca.crt
+cat "$letsencrypt_issued_key_file" > /opt/zimbra/ssl/zimbra/commercial/commercial.key
+cat "$letsencrypt_issued_cert_file" > /tmp/commercial.crt 
+cat "$root_CA_file" "$letsencrypt_issued_chain_file" > /tmp/commercial_ca.crt 
 
 chown -R "$zimbra_user":"$zimbra_user" /opt/zimbra/ssl/zimbra/commercial/commercial.key
-chown -R "$zimbra_user":"$zimbra_user" /opt/zimbra/ssl/zimbra/commercial/commercial_ca.crt
-chown -R "$zimbra_user":"$zimbra_user" /opt/zimbra/ssl/zimbra/commercial/commercial.crt
+chown -R "$zimbra_user":"$zimbra_user" /tmp/commercial.crt
+chown -R "$zimbra_user":"$zimbra_user" /tmp/commercial_ca.crt
 
 # verify it with Zimbra tool
-su -c "'$zmcertmgr' verifycrt comm" - "$zimbra_user" || {
+su -c "'$zmcertmgr' verifycrt comm /opt/zimbra/ssl/zimbra/commercial/commercial.key /tmp/commercial.crt /tmp/commercial_ca.crt" - "$zimbra_user" || {
     error "Verification of the issued certificate with '$zmcertmgr' failed."
     exit 4
 }
 
 # install the certificate to Zimbra
-su -c "'$zmcertmgr' deploycrt comm" - "$zimbra_user" || {
+su -c "'$zmcertmgr' deploycrt comm /tmp/commercial.crt /tmp/commercial_ca.crt" - "$zimbra_user" || {
     error "Installation of the issued certificate with '$zmcertmgr' failed."
     exit 4
 }
 
 
-# finally, restart the Zimbra
+# finally, restart Zimbra
 service "$zimbra_service" restart || {
     error "Restarting zimbra service failed."
     exit 5

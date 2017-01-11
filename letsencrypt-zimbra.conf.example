@@ -1,0 +1,69 @@
+#!/bin/bash
+# credit for original script Vojtech Myslivec <vojtech@xmyslivec.cz>
+# https://github.com/VojtechMyslivec/letsencrypt-zimbra
+# GPLv2 licence
+
+# fork author: Lorenzo Faleschini <lorenzo@nordest.systems>
+# https://github.com/penzoiders/letsencrypt-zimbra
+
+# --------------------------------------------------------------------
+# -- Mandatory Variables ---------------------------------------------
+# --------------------------------------------------------------------
+
+# common name in the certificate
+CN="mail.nordest.systems"
+
+# email for letsencrypt communications
+letsencrypt_email="webmaster@nordest.systems"
+
+# zimbra-letsencrypt folder
+letsencrypt_zimbra_dir="/root/zimbra-auto-letsencrypt"
+
+# --------------------------------------------------------------------
+# -- Variables that usually are ok like this -------------------------
+# --------------------------------------------------------------------
+
+# letsencrypt tool
+letsencrypt="/usr/bin/certbot"
+# letsencrypt live directory
+letsencrypt_live_dir="/etc/letsencrypt/live/${CN}"
+# generated cert
+letsencrypt_issued_cert_file="${letsencrypt_live_dir}/cert.pem"
+# generated chain
+letsencrypt_issued_chain_file="${letsencrypt_live_dir}/chain.pem"
+# generated fullchain
+letsencrypt_issued_fullchain_file="${letsencrypt_live_dir}/fullchain.pem"
+# generated key
+letsencrypt_issued_key_file="${letsencrypt_live_dir}/privkey.pem"
+# root CA
+root_CA_file="${letsencrypt_zimbra_dir}/DSTRootCAX3.pem"
+
+# zimbra service and binary details
+zimbra_service="zimbra"
+zimbra_user="zimbra"
+zimbra_dir="/opt/zimbra"
+zimbra_bin_dir="${zimbra_dir}/bin"
+zmcertmgr="${zimbra_bin_dir}/zmcertmgr"
+zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
+zimbra_key="${zimbra_ssl_dir}/commercial.key"
+
+# subject in request -- does not matter for letsencrypt but must be there for openssl
+cert_subject="/"
+
+# openssl config skeleton
+#  it is important to have an alt_names section there!
+openssl_config="
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+
+[req_distinguished_name]
+[ v3_req ]
+
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = $CN
+"
