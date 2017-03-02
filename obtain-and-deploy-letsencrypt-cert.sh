@@ -326,7 +326,9 @@ su -c \
 
 
 # finally, restart the Zimbra
-"$zmcontrol" restart > /dev/null || {
+su -c \
+  "'$zmcontrol' restart" \
+  - "$zimbra_user" > /dev/null || {
     error "Restarting zimbra failed."
     cleanup
     exit 5
