@@ -1,5 +1,5 @@
 #!/bin/sh
-email="$2"
+email="$1"
 sendmail="/opt/zimbra/common/sbin/sendmail"
 subject="Certificate has been renewed"
 message="Hello,
