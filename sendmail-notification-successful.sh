@@ -15,7 +15,7 @@ USAGE="USAGE
     This simple script will send the email to the specified
     e-mail address via '$sendmail' program."
 
-[ $# -ne 0 ] && {
+[ $# -ne 1 ] && {
     echo "$USAGE" >&2
     exit 1
 }
