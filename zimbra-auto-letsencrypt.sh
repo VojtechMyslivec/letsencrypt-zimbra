@@ -91,7 +91,7 @@ renew_cert="no"
 [ $# -eq 2 ] && {
     if [ "$1" == "--renew" ]; then
         renew_cert="yes"
-	if [ -z "$2" ]; then
+	if [ -n "$2" ]; then
             config_file="$2"
         fi
     else

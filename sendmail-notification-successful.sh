@@ -1,5 +1,5 @@
 #!/bin/sh
-email="$2"
+email="$1"
 sendmail="/opt/zimbra/common/sbin/sendmail"
 subject="Certificate has been renewed"
 message="Hello,
@@ -15,7 +15,7 @@ USAGE="USAGE
     This simple script will send the email to the specified
     e-mail address via '$sendmail' program."
 
-[ $# -ne 0 ] && {
+[ $# -ne 1 ] && {
     echo "$USAGE" >&2
     exit 1
 }
