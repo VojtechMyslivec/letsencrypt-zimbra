@@ -2,15 +2,30 @@
 # author: Vojtech Myslivec <vojtech@xmyslivec.cz>
 # GPLv2 licence
 
+set -o nounset
+
 SCRIPTNAME=${0##*/}
 
 USAGE="USAGE
     $SCRIPTNAME -h | --help | help
-    $SCRIPTNAME
+    $SCRIPTNAME email FQDN...
 
     This script is used for extend the already-deployed zimbra
     (so-called) commercial certificate issued by Let's Encrypt
     certification authority.
+
+    Arguments:
+
+        -h | --help | help
+                Prints this message and exits.
+
+        email
+                Email to use for LE registration.
+
+        FQDN
+                One or more DNS names to use as common name
+                (or as alternative names more precisely)
+                in the certificate.
 
     The script will stop zimbra' services for a while and restart
     them once the certificate is extended and deployed. If the
@@ -19,39 +34,20 @@ USAGE="USAGE
 
     Suitable to be run via cron.
 
-    Friendly notice: restarting Zimbra service take a while (1+ m).
+    Friendly notice: restarting Zimbra service take a while (1 m+).
 
     Depends on:
         zimbra
-        letsencrypt-auto utility
-        openssl"
+        letsencrypt-auto (certbot) utility
+        openssl
+        service - debian/ubuntu style"
 
 # --------------------------------------------------------------------
 # -- Variables -------------------------------------------------------
 # --------------------------------------------------------------------
-# should be in config file o_O
+letsencrypt_zimbra_dir="${0%/*}"
+source "${letsencrypt_zimbra_dir}/letsencrypt-zimbra.cfg"
 
-# letsencrypt tool
-letsencrypt="/root/letsencrypt/letsencrypt-auto"
-# the name of file which letsencrypt will generate
-letsencrypt_issued_cert_file="0000_cert.pem"
-# intermediate CA
-letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
-# root CA
-root_CA_file="/root/letsencrypt-zimbra/DSTRootCAX3.pem"
-
-zimbra_service="zimbra"
-zimbra_user="zimbra"
-zimbra_dir="/opt/zimbra"
-
-zimbra_bin_dir="${zimbra_dir}/bin"
-zmcertmgr="${zimbra_bin_dir}/zmcertmgr"
-
-zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
-zimbra_key="${zimbra_ssl_dir}/commercial.key"
-
-# common name in the certificate
-CN="mail.theajty.com"
 # subject in request -- does not matter for letsencrypt but must be there for openssl
 cert_subject="/"
 # openssl config skeleton
@@ -68,9 +64,7 @@ basicConstraints = CA:FALSE
 keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 subjectAltName = @alt_names
 
-[alt_names]
-DNS.1 = $CN
-"
+[alt_names]"
 
 # --------------------------------------------------------------------
 # -- Functions -------------------------------------------------------
@@ -94,17 +88,31 @@ information() {
     message "info" "$*"
 }
 
+# is $1 a readable ordinary file? (optionaly for user $2)
 readable_file() {
-    [ -f "$1" -a -r "$1" ]
+    if [ -z "${2:-}" ]; then
+        [ -f "$1" -a -r "$1" ]
+    else
+        su -c \
+          "[ -f '$1' -a -r '$1' ]" \
+          - "$2"
+    fi
 }
 
+# is $1 a executable ordinary file? (optionaly for user $2)
 executable_file() {
-    [ -f "$1" -a -x "$1" ]
+    if [ -z "${2:-}" ]; then
+        [ -f "$1" -a -x "$1" ]
+    else
+        su -c \
+          "[ -f '$1' -a -x '$1' ]" \
+          - "$2"
+    fi
 }
 
 cleanup() {
     [ -d "$temp_dir" ] && {
-        rm -rf "$temp_dir" || {
+        rm -r "$temp_dir" || {
             warning "Cannot remove temporary directory '$temp_dir'. You should check it for private data."
         }
     }
@@ -137,22 +145,42 @@ start_nginx() {
     }
 }
 
+# this function will constructs openssl csr config to stdout
+# arguments are used as SAN
+assemble_csr_config() {
+    local i=1
+    typeset -i i
+
+    echo "$openssl_config"
+
+    for arg; do
+        echo "DNS.${i} = ${arg}"
+        i+=1
+    done
+}
+
 # --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
 # --------------------------------------------------------------------
 
 # HELP?
-[ $# -eq 1 ] && {
+[ $# -ge 1 ] && {
     if [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "help" ]; then
         echo "$USAGE"
         exit 0
     fi
 }
 
-[ $# -eq 0 ] || {
+[ $# -lt 2 ] && {
     echo "$USAGE" >&2
     exit 1
 }
+
+# email for LE registration
+email="$1"
+
+# shift -- all other argumets are FQDNs
+shift
 
 # --------------------------------------------------------------------
 # -- Tests -----------------------------------------------------------
@@ -189,14 +217,14 @@ temp_dir=$( mktemp -d ) || {
 openssl_config_file="${temp_dir}/openssl.cnf"
 request_file="${temp_dir}/request.pem"
 
-# create the openssl config file
-echo "$openssl_config" > "$openssl_config_file"
+# create the openssl config file from script arguments
+assemble_csr_config "$@" > "$openssl_config_file"
 
 # --------------------------------------------------------------------
 # -- Obtaining the certificate ---------------------------------------
 # --------------------------------------------------------------------
 
-# create the certificate signing request [crs]
+# create the certificate signing request [csr]
 openssl req -new -nodes -sha256 -outform der \
     -config "$openssl_config_file" \
     -subj "$cert_subject" \
@@ -211,16 +239,23 @@ openssl req -new -nodes -sha256 -outform der \
 stop_nginx
 
 # ----------------------------------------------------------
-# letsencrypt utility stores the obtained certificates in PWD,
+# letsencrypt utility stores the obtained certificates in PWD
 # so we must cd in the temp directory
 cd "$temp_dir"
 
 # TODO implement parameters for
 #   - staging environment
 #   - non-batch/interactive mode
-# exchange the following 2 lines if you need to debug/test this script
-#"$letsencrypt" certonly --standalone --csr "$request_file" --staging || {
-"$letsencrypt" certonly --standalone --csr "$request_file" > /dev/null 2>&1 || {
+# exchange following lines if you need to debug or test this script:
+#"$letsencrypt" certonly \
+#  --staging \
+#  --standalone \
+#  --non-interactive --agree-tos \
+#  --email "$email" --csr "$request_file" || {
+"$letsencrypt" certonly \
+  --standalone \
+  --non-interactive --quiet --agree-tos \
+  --email "$email" --csr "$request_file" || {
     error "The certificate cannot be obtained with '$letsencrypt' tool."
     start_nginx
     cleanup
@@ -243,30 +278,47 @@ cert_file="${temp_dir}/${letsencrypt_issued_cert_file}"
 intermediate_CA_file="${temp_dir}/${letsencrypt_issued_intermediate_CA_file}"
 chain_file="${temp_dir}/chain.pem"
 
-readable_file "$cert_file" || {
+touch "$chain_file" || {
+    error "Cannot create a chain file '$chain_file'."
+    cleanup
+    exit 4
+}
+
+# change ownership to zimbra user
+chown -R "${zimbra_user}:" "$temp_dir" || {
+    error "Cannot change ownership of temp files to zimbra user."
+    cleanup
+    exit 4
+}
+
+readable_file "$cert_file" "$zimbra_user" || {
     error "The issued certificate file '$cert_file' isn't readable file. Maybe it was created with different name?"
     cleanup
     exit 4
 }
 
-readable_file "$intermediate_CA_file" || {
+readable_file "$intermediate_CA_file" "$zimbra_user" || {
     error "The issued intermediate CA file '$intermediate_CA_file' isn't readable file. Maybe it was created with different name?"
     cleanup
     exit 4
 }
 
 # create one CA chain file
-cat "$root_CA_file" "$intermediate_CA_file" > "$chain_file"
+cat "$intermediate_CA_file" "$root_CA_file" > "$chain_file"
 
 # verify it with Zimbra tool
-"$zmcertmgr" verifycrt comm "$zimbra_key" "$cert_file" "$chain_file" > /dev/null || {
+su -c \
+  "'$zmcertmgr' verifycrt comm '$zimbra_key' '$cert_file' '$chain_file'" \
+  - "$zimbra_user" > /dev/null || {
     error "Verification of the issued certificate with '$zmcertmgr' failed."
     cleanup
     exit 4
 }
 
 # install the certificate to Zimbra
-"$zmcertmgr" deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
+su -c \
+  "'$zmcertmgr' deploycrt comm '$cert_file' '$chain_file'" \
+  - "$zimbra_user" > /dev/null || {
     error "Installation of the issued certificate with '$zmcertmgr' failed."
     cleanup
     exit 4
@@ -274,8 +326,10 @@ cat "$root_CA_file" "$intermediate_CA_file" > "$chain_file"
 
 
 # finally, restart the Zimbra
-service "$zimbra_service" restart > /dev/null || {
-    error "Restarting zimbra service failed."
+su -c \
+  "'$zmcontrol' restart" \
+  - "$zimbra_user" > /dev/null || {
+    error "Restarting zimbra failed."
     cleanup
     exit 5
 }
