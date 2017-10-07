@@ -30,6 +30,7 @@ root_CA_file="${letsencrypt_zimbra_dir}/DSTRootCAX3.pem"
 # mail variables ==========================================
 # 8.7 and later: "${zimbra_dir}/common/sbin/sendmail"
 sendmail="${zimbra_dir}/postfix/sbin/sendmail"
+email="insertyourmail@example.com"
 
 ### reminder mail ###
 subject_reminder="Certificate renewal in ${1:-x} day(s)"
