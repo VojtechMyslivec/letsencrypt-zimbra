@@ -19,7 +19,7 @@ USAGE="USAGE
 letsencrypt_zimbra_dir="${0%/*}"
 source "$letsencrypt_zimbra_dir/letsencrypt-zimbra.cfg"
 
-echo "Subject: $subject
+echo "Subject: $subject_reminder
 
-$message" | "$sendmail" "$email"
+$message_reminder" | "$sendmail" "$email"
 
