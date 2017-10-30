@@ -263,10 +263,10 @@ assemble_csr_config "${common_names[@]}" > "$openssl_config_file"
 
 # create the certificate signing request [csr]
 openssl req -new -nodes -sha256 -outform der \
-    -config "$openssl_config_file" \
-    -subj "$cert_subject" \
-    -key "$zimbra_key" \
-    -out "$request_file" || {
+  -config "$openssl_config_file" \
+  -subj "$cert_subject" \
+  -key "$zimbra_key" \
+  -out "$request_file" || {
     error "Cannot create the certificate signing request."
     cleanup
     exit 3
