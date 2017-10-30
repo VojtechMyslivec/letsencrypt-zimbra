@@ -24,8 +24,6 @@ common_names=( "example.com" )
 # letsencrypt tool =========================================
 letsencrypt="/opt/certbot/letsencrypt-auto"
 
-zimbra_service="zimbra"
-zimbra_user="zimbra"
 zimbra_dir="/opt/zimbra"
 
 zimbra_bin_dir="${zimbra_dir}/bin"

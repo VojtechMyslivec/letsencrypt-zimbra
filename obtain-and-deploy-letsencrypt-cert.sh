@@ -61,26 +61,14 @@ information() {
     message "info" "$*"
 }
 
-# is $1 a readable ordinary file? (optionaly for user $2)
+# is $1 a readable ordinary file?
 readable_file() {
-    if [ -z "${2:-}" ]; then
-        [ -f "$1" -a -r "$1" ]
-    else
-        su -c \
-          "[ -f '$1' -a -r '$1' ]" \
-          - "$2"
-    fi
+    [ -f "$1" -a -r "$1" ]
 }
 
-# is $1 a executable ordinary file? (optionaly for user $2)
+# is $1 a executable ordinary file?
 executable_file() {
-    if [ -z "${2:-}" ]; then
-        [ -f "$1" -a -x "$1" ]
-    else
-        su -c \
-          "[ -f '$1' -a -x '$1' ]" \
-          - "$2"
-    fi
+    [ -f "$1" -a -x "$1" ]
 }
 
 cleanup() {
@@ -93,14 +81,17 @@ cleanup() {
 
 # just a kindly message how to fix stopped nginx
 fix_nginx_message() {
-    echo "        You must probably fix it with:
-        'su -c 'zmproxyctl start; zmmailboxdctl start' - $zimbra_user'
-        command or something." >&2
+    cat >&2 <<EOF
+        You must probably fix it with:
+          \`zmproxyctl start; zmmailboxdctl start\`
+        command or something.
+EOF
 }
 
 # this function will stop Zimbra's nginx
 stop_nginx() {
-    su -c 'zmproxyctl stop; zmmailboxdctl stop' - "$zimbra_user" > /dev/null || {
+    zmproxyctl stop > /dev/null && \
+      zmmailboxdctl stop > /dev/null || {
         error "There were some error during stopping the Zimbra' nginx."
         fix_nginx_message
         cleanup
@@ -110,7 +101,8 @@ stop_nginx() {
 
 # and another one to start it
 start_nginx() {
-    su -c 'zmproxyctl start; zmmailboxdctl start' - "$zimbra_user" > /dev/null || {
+    zmproxyctl start > /dev/null && \
+      zmmailboxdctl start > /dev/null || {
         error "There were some error during starting the Zimbra' nginx."
         fix_nginx_message
         cleanup
@@ -272,7 +264,7 @@ cd "$temp_dir"
 #  --standalone \
 #  --non-interactive --agree-tos \
 #  --email "$email" --csr "$request_file" || {
-"$letsencrypt" certonly \
+sudo "$letsencrypt" certonly \
   --standalone \
   --non-interactive --quiet --agree-tos \
   --email "$email" --csr "$request_file" || {
@@ -305,19 +297,13 @@ touch "$chain_file" || {
 }
 
 # change ownership to zimbra user
-chown -R "${zimbra_user}:" "$temp_dir" || {
-    error "Cannot change ownership of temp files to zimbra user."
-    cleanup
-    exit 4
-}
-
-readable_file "$cert_file" "$zimbra_user" || {
+readable_file "$cert_file" || {
     error "The issued certificate file '$cert_file' isn't readable file. Maybe it was created with different name?"
     cleanup
     exit 4
 }
 
-readable_file "$intermediate_CA_file" "$zimbra_user" || {
+readable_file "$intermediate_CA_file" || {
     error "The issued intermediate CA file '$intermediate_CA_file' isn't readable file. Maybe it was created with different name?"
     cleanup
     exit 4
@@ -327,18 +313,14 @@ readable_file "$intermediate_CA_file" "$zimbra_user" || {
 cat "$intermediate_CA_file" "$root_CA_file" > "$chain_file"
 
 # verify it with Zimbra tool
-su -c \
-  "'$zmcertmgr' verifycrt comm '$zimbra_key' '$cert_file' '$chain_file'" \
-  - "$zimbra_user" > /dev/null || {
+"$zmcertmgr" verifycrt comm "$zimbra_key" "$cert_file" "$chain_file" > /dev/null || {
     error "Verification of the issued certificate with '$zmcertmgr' failed."
     cleanup
     exit 4
 }
 
 # install the certificate to Zimbra
-su -c \
-  "'$zmcertmgr' deploycrt comm '$cert_file' '$chain_file'" \
-  - "$zimbra_user" > /dev/null || {
+"$zmcertmgr" deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
     error "Installation of the issued certificate with '$zmcertmgr' failed."
     cleanup
     exit 4
@@ -346,9 +328,7 @@ su -c \
 
 
 # finally, restart the Zimbra
-su -c \
-  "'$zmcontrol' restart" \
-  - "$zimbra_user" > /dev/null || {
+"$zmcontrol" restart > /dev/null || {
     error "Restarting zimbra failed."
     cleanup
     exit 5
