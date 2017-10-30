@@ -25,10 +25,7 @@ common_names=( "example.com" )
 letsencrypt="/opt/certbot/certbot-auto"
 
 zimbra_dir="/opt/zimbra"
-
 zimbra_bin_dir="${zimbra_dir}/bin"
-zmcontrol="${zimbra_bin_dir}/zmcontrol"
-zmcertmgr="${zimbra_bin_dir}/zmcertmgr"
 
 zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
 zimbra_key="${zimbra_ssl_dir}/commercial.key"
