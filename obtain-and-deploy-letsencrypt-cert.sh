@@ -10,22 +10,17 @@
 set -o nounset
 
 SCRIPTNAME=${0##*/}
-
 USAGE="USAGE
-    $SCRIPTNAME -h | --help | help
+    $SCRIPTNAME -h
     $SCRIPTNAME
 
+DESCRIPTION
     This script is used for extend the already-deployed zimbra
     (so-called) commercial certificate issued by Let's Encrypt
     certification authority.
 
     It reads its configuration file letsencrypt-zimbra.cfg which
     must be located in the same directory as this script.
-
-    Arguments:
-
-        -h | --help | help
-                Prints this message and exits.
 
     The script will stop zimbra' services for a while and restart
     them once the certificate is extended and deployed. If the
@@ -39,7 +34,10 @@ USAGE="USAGE
     Depends on:
         zimbra
         letsencrypt-auto (certbot) utility
-        openssl"
+        openssl
+
+OPTIONS
+    -h      Prints this message and exits"
 
 # --------------------------------------------------------------------
 # -- Functions -------------------------------------------------------
@@ -168,7 +166,7 @@ subjectAltName = @alt_names
 
 if [ $# -ne 0 ]; then
     # HELP?
-    if [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "help" ]; then
+    if [ "$1" == '-h' ]; then
         echo "$USAGE"
         exit 0
     fi
