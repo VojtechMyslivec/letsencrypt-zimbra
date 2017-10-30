@@ -1,31 +1,31 @@
 #!/bin/bash
-# author: Vojtech Myslivec <vojtech@xmyslivec.cz>
-# GPLv2 licence
-
+## letsencrypt-zimbra
+#
+# Author:   Vojtech Myslivec <vojtech@xmyslivec.cz>
+#           and others
+# License:  GPLv2
+# Web:      https://github.com/VojtechMyslivec/letsencrypt-zimbra
+#
+# --------------------------------------------------------------------
 set -o nounset
 
 SCRIPTNAME=${0##*/}
 
 USAGE="USAGE
     $SCRIPTNAME -h | --help | help
-    $SCRIPTNAME email FQDN...
+    $SCRIPTNAME
 
     This script is used for extend the already-deployed zimbra
     (so-called) commercial certificate issued by Let's Encrypt
     certification authority.
 
+    It reads its configuration file letsencrypt-zimbra.cfg which
+    must be located in the same directory as this script.
+
     Arguments:
 
         -h | --help | help
                 Prints this message and exits.
-
-        email
-                Email to use for LE registration.
-
-        FQDN
-                One or more DNS names to use as common name
-                (or as alternative names more precisely)
-                in the certificate.
 
     The script will stop zimbra' services for a while and restart
     them once the certificate is extended and deployed. If the
@@ -34,37 +34,12 @@ USAGE="USAGE
 
     Suitable to be run via cron.
 
-    Friendly notice: restarting Zimbra service take a while (1 m+).
+    Friendly notice: restarting Zimbra take a while (1 m+).
 
     Depends on:
         zimbra
         letsencrypt-auto (certbot) utility
-        openssl
-        service - debian/ubuntu style"
-
-# --------------------------------------------------------------------
-# -- Variables -------------------------------------------------------
-# --------------------------------------------------------------------
-letsencrypt_zimbra_dir="${0%/*}"
-source "${letsencrypt_zimbra_dir}/letsencrypt-zimbra.cfg"
-
-# subject in request -- does not matter for letsencrypt but must be there for openssl
-cert_subject="/"
-# openssl config skeleton
-#  it is important to have an alt_names section there!
-openssl_config="
-[req]
-distinguished_name = req_distinguished_name
-req_extensions = v3_req
-
-[req_distinguished_name]
-[ v3_req ]
-
-basicConstraints = CA:FALSE
-keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-subjectAltName = @alt_names
-
-[alt_names]"
+        openssl"
 
 # --------------------------------------------------------------------
 # -- Functions -------------------------------------------------------
@@ -160,31 +135,69 @@ assemble_csr_config() {
 }
 
 # --------------------------------------------------------------------
+# -- Variables -------------------------------------------------------
+# --------------------------------------------------------------------
+letsencrypt_zimbra_dir="${0%/*}"
+letsencrypt_zimbra_config="${letsencrypt_zimbra_dir}/letsencrypt-zimbra.cfg"
+source "$letsencrypt_zimbra_config" || {
+    error "Can not source config file '$letsencrypt_zimbra_config'"
+    exit 1
+}
+
+# subject in request -- does not matter for letsencrypt but must be there for openssl
+cert_subject="/"
+# openssl config skeleton
+#  it is important to have an alt_names section there!
+openssl_config="
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+
+[req_distinguished_name]
+[ v3_req ]
+
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = @alt_names
+
+[alt_names]"
+
+# --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
 # --------------------------------------------------------------------
 
-# HELP?
-[ $# -ge 1 ] && {
+if [ $# -ne 0 ]; then
+    # HELP?
     if [ "$1" == "-h" -o "$1" == "--help" -o "$1" == "help" ]; then
         echo "$USAGE"
         exit 0
     fi
-}
 
-[ $# -lt 2 ] && {
     echo "$USAGE" >&2
     exit 1
-}
-
-# email for LE registration
-email="$1"
-
-# shift -- all other argumets are FQDNs
-shift
+fi
 
 # --------------------------------------------------------------------
 # -- Tests -----------------------------------------------------------
 # --------------------------------------------------------------------
+
+# check simple email format
+[[ "$email" =~ ^[^[:space:]]+@[^[:space:]]+\.[^[:space:]]+$ ]] || {
+    error "email '$email' is in wrong format - use user@domain.tld"
+    exit 2
+}
+
+# check that common_names is an array
+declare -p common_names 2> /dev/null \
+  | grep -q '^declare -a ' || {
+    error "parameter common_names must be an array"
+    exit 2
+}
+# check that common_names have at least 1 item
+[ ${#common_names[@]} -gt 0 ] || {
+    error "array common_names must have at least 1 item"
+    exit 2
+}
 
 executable_file "$letsencrypt" || {
     error "Letsencrypt tool '$letsencrypt' isn't executable file."
@@ -217,8 +230,8 @@ temp_dir=$( mktemp -d ) || {
 openssl_config_file="${temp_dir}/openssl.cnf"
 request_file="${temp_dir}/request.pem"
 
-# create the openssl config file from script arguments
-assemble_csr_config "$@" > "$openssl_config_file"
+# create the openssl config file from common_names array
+assemble_csr_config "${common_names[@]}" > "$openssl_config_file"
 
 # --------------------------------------------------------------------
 # -- Obtaining the certificate ---------------------------------------
@@ -340,4 +353,3 @@ su -c \
 # --------------------------------------------------------------------
 
 cleanup
-
