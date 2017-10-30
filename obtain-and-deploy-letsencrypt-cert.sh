@@ -152,6 +152,15 @@ subjectAltName = @alt_names
 
 [alt_names]"
 
+
+# root CA certificate - zimbra needs it
+root_CA_file="${letsencrypt_zimbra_dir}/DSTRootCAX3.pem"
+
+# the name of file which letsencrypt will generate
+letsencrypt_issued_cert_file="0000_cert.pem"
+# intermediate CA
+letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
+
 # --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
 # --------------------------------------------------------------------
