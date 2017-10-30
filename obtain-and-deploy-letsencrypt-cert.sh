@@ -12,7 +12,7 @@ set -o nounset
 SCRIPTNAME=${0##*/}
 USAGE="USAGE
     $SCRIPTNAME -h
-    $SCRIPTNAME
+    $SCRIPTNAME [-t]
 
 DESCRIPTION
     This script is used for extend the already-deployed zimbra
@@ -37,7 +37,10 @@ DESCRIPTION
         openssl
 
 OPTIONS
-    -h      Prints this message and exits"
+    -h      Prints this message and exits
+
+    -t      Use staging Let's Encrypt URL; will issue not-trusted
+            certificate, but useful for testing"
 
 # --------------------------------------------------------------------
 # -- Functions -------------------------------------------------------
@@ -153,22 +156,27 @@ subjectAltName = @alt_names
 [alt_names]"
 
 
-# root CA certificate - zimbra needs it
-root_CA_file="${letsencrypt_zimbra_dir}/DSTRootCAX3.pem"
-
 # the name of file which letsencrypt will generate
 letsencrypt_issued_cert_file="0000_cert.pem"
 # intermediate CA
 letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
 
+certbot_extra_args=()
+TESTING='false'
+
 # --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
 # --------------------------------------------------------------------
-while getopts ':h' OPT; do
+while getopts ':ht' OPT; do
     case "$OPT" in
         h)
             echo "$USAGE"
             exit 0
+            ;;
+
+        t)
+            certbot_extra_args+=("--staging")
+            TESTING='true'
             ;;
 
         \?)
@@ -184,6 +192,14 @@ shift $(( OPTIND-1 ))
     echo "$USAGE" >&2
     exit 1
 }
+
+# root CA certificate - zimbra needs it
+if [ "$TESTING" == 'false' ]; then
+    root_CA_file="${letsencrypt_zimbra_dir}/DSTRootCAX3.pem"
+else
+    root_CA_file="${letsencrypt_zimbra_dir}/fakelerootx1.pem"
+fi
+
 
 # --------------------------------------------------------------------
 # -- Tests -----------------------------------------------------------
@@ -265,17 +281,12 @@ stop_nginx
 cd "$temp_dir"
 
 # TODO implement parameters for
-#   - staging environment
 #   - non-batch/interactive mode
 # exchange following lines if you need to debug or test this script:
-#"$letsencrypt" certonly \
-#  --staging \
-#  --standalone \
-#  --non-interactive --agree-tos \
-#  --email "$email" --csr "$request_file" || {
 sudo "$letsencrypt" certonly \
   --standalone \
   --non-interactive --quiet --agree-tos \
+  "${certbot_extra_args[@]}" \
   --email "$email" --csr "$request_file" || {
     error "The certificate cannot be obtained with '$letsencrypt' tool."
     start_nginx
