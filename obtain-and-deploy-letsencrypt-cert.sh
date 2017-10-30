@@ -143,6 +143,10 @@ source "$letsencrypt_zimbra_config" || {
     exit 1
 }
 
+# a lot of binaries in zimbra_bin_dir
+PATH="$zimbra_bin_dir:$PATH"
+
+
 # subject in request -- does not matter for letsencrypt but must be there for openssl
 cert_subject="/"
 # openssl config skeleton
@@ -244,10 +248,12 @@ executable_file "$letsencrypt" || {
     exit 2
 }
 
-executable_file "$zmcertmgr" || {
-    error "Zimbra cert. manager '$zmcertmgr' isn't executable file."
-    exit 2
-}
+for bin in zmcertmgr zmcontrol zmmailboxdctl zmproxyctl; do
+    which "$bin" &> /dev/null || {
+        error "Zimbra executable '$bin' not found"
+        exit 2
+    }
+done
 
 readable_file "$zimbra_key" || {
     error "Private key '$zimbra_key' isn't readable file."
@@ -348,15 +354,15 @@ cat "$intermediate_CA_file" "$root_CA_file" > "$chain_file"
 
 # verify it with Zimbra tool
 information "test and deploy certificates"
-"$zmcertmgr" verifycrt comm "$zimbra_key" "$cert_file" "$chain_file" > /dev/null || {
-    error "Verification of the issued certificate with '$zmcertmgr' failed."
+zmcertmgr verifycrt comm "$zimbra_key" "$cert_file" "$chain_file" > /dev/null || {
+    error "Verification of the issued certificate failed."
     cleanup
     exit 4
 }
 
 # install the certificate to Zimbra
-"$zmcertmgr" deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
-    error "Installation of the issued certificate with '$zmcertmgr' failed."
+zmcertmgr deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
+    error "Installation of the issued certificate failed."
     cleanup
     exit 4
 }
@@ -364,7 +370,7 @@ information "test and deploy certificates"
 
 # finally, restart the Zimbra
 information "restart zimbra"
-"$zmcontrol" restart > /dev/null || {
+zmcontrol restart > /dev/null || {
     error "Restarting zimbra failed."
     cleanup
     exit 5
