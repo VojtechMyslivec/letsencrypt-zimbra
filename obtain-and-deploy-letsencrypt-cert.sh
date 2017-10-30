@@ -12,7 +12,7 @@ set -o nounset
 SCRIPTNAME=${0##*/}
 USAGE="USAGE
     $SCRIPTNAME -h
-    $SCRIPTNAME [-q] [-t]
+    $SCRIPTNAME [-q|-v] [-t]
 
 DESCRIPTION
     This script is used for extend the already-deployed zimbra
@@ -37,7 +37,8 @@ DESCRIPTION
 OPTIONS
     -h      Prints this message and exits
 
-    -q      Quiet mode, suitable for cron
+    -q      Quiet mode, suitable for cron (overrides '-v')
+    -v      Verbose mode, useful for testing (overrides '-q')
     -t      Use staging Let's Encrypt URL; will issue not-trusted
             certificate, but useful for testing"
 
@@ -60,7 +61,7 @@ warning() {
 }
 
 information() {
-    message "info" "$*"
+    [ "$VERBOSE" == 'true' ] && message "info" "$*"
 }
 
 # is $1 a readable ordinary file?
@@ -74,6 +75,8 @@ executable_file() {
 }
 
 cleanup() {
+    information "cleanup temp files"
+
     [ -d "$temp_dir" ] && {
         rm -r "$temp_dir" || {
             warning "Cannot remove temporary directory '$temp_dir'. You should check it for private data."
@@ -92,6 +95,8 @@ EOF
 
 # this function will stop Zimbra's nginx
 stop_nginx() {
+    information "stop nginx"
+
     zmproxyctl stop > /dev/null && \
       zmmailboxdctl stop > /dev/null || {
         error "There were some error during stopping the Zimbra' nginx."
@@ -103,6 +108,8 @@ stop_nginx() {
 
 # and another one to start it
 start_nginx() {
+    information "start nginx"
+
     zmproxyctl start > /dev/null && \
       zmmailboxdctl start > /dev/null || {
         error "There were some error during starting the Zimbra' nginx."
@@ -162,11 +169,12 @@ letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
 
 certbot_extra_args=()
 TESTING='false'
+VERBOSE='false'
 
 # --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
 # --------------------------------------------------------------------
-while getopts ':hqt' OPT; do
+while getopts ':hqtv' OPT; do
     case "$OPT" in
         h)
             echo "$USAGE"
@@ -175,11 +183,16 @@ while getopts ':hqt' OPT; do
 
         q)
             certbot_extra_args+=("--quiet")
+            VERBOSE='false'
             ;;
 
         t)
             certbot_extra_args+=("--staging")
             TESTING='true'
+            ;;
+
+        v)
+            VERBOSE='true'
             ;;
 
         \?)
@@ -249,7 +262,6 @@ readable_file "$root_CA_file" || {
 # --------------------------------------------------------------------
 # -- Temporary files -------------------------------------------------
 # --------------------------------------------------------------------
-
 temp_dir=$( mktemp -d ) || {
     error "Cannot create temporary directory."
     exit 2
@@ -257,13 +269,14 @@ temp_dir=$( mktemp -d ) || {
 openssl_config_file="${temp_dir}/openssl.cnf"
 request_file="${temp_dir}/request.pem"
 
+information "create csr config '$openssl_config_file'"
 # create the openssl config file from common_names array
 assemble_csr_config "${common_names[@]}" > "$openssl_config_file"
 
 # --------------------------------------------------------------------
 # -- Obtaining the certificate ---------------------------------------
 # --------------------------------------------------------------------
-
+information "generate csr '$request_file'"
 # create the certificate signing request [csr]
 openssl req -new -nodes -sha256 -outform der \
   -config "$openssl_config_file" \
@@ -283,6 +296,7 @@ stop_nginx
 # so we must cd in the temp directory
 cd "$temp_dir"
 
+information "issue certificate; certbot_extra_args: ${certbot_extra_args[@]}"
 sudo "$letsencrypt" certonly \
   --standalone \
   --non-interactive --agree-tos \
@@ -305,7 +319,7 @@ start_nginx
 # --------------------------------------------------------------------
 # -- Deploying the certificate ---------------------------------------
 # --------------------------------------------------------------------
-
+information "assemble cert files"
 cert_file="${temp_dir}/${letsencrypt_issued_cert_file}"
 intermediate_CA_file="${temp_dir}/${letsencrypt_issued_intermediate_CA_file}"
 chain_file="${temp_dir}/chain.pem"
@@ -333,6 +347,7 @@ readable_file "$intermediate_CA_file" || {
 cat "$intermediate_CA_file" "$root_CA_file" > "$chain_file"
 
 # verify it with Zimbra tool
+information "test and deploy certificates"
 "$zmcertmgr" verifycrt comm "$zimbra_key" "$cert_file" "$chain_file" > /dev/null || {
     error "Verification of the issued certificate with '$zmcertmgr' failed."
     cleanup
@@ -348,6 +363,7 @@ cat "$intermediate_CA_file" "$root_CA_file" > "$chain_file"
 
 
 # finally, restart the Zimbra
+information "restart zimbra"
 "$zmcontrol" restart > /dev/null || {
     error "Restarting zimbra failed."
     cleanup
