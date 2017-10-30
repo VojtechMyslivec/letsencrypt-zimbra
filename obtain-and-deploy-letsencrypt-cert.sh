@@ -12,7 +12,7 @@ set -o nounset
 SCRIPTNAME=${0##*/}
 USAGE="USAGE
     $SCRIPTNAME -h
-    $SCRIPTNAME [-t]
+    $SCRIPTNAME [-q] [-t]
 
 DESCRIPTION
     This script is used for extend the already-deployed zimbra
@@ -27,8 +27,6 @@ DESCRIPTION
     obtained certificate isn't valid after all, Zimbra will start
     with the old certificate unchanged.
 
-    Suitable to be run via cron.
-
     Friendly notice: restarting Zimbra take a while (1 m+).
 
     Depends on:
@@ -39,6 +37,7 @@ DESCRIPTION
 OPTIONS
     -h      Prints this message and exits
 
+    -q      Quiet mode, suitable for cron
     -t      Use staging Let's Encrypt URL; will issue not-trusted
             certificate, but useful for testing"
 
@@ -167,11 +166,15 @@ TESTING='false'
 # --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
 # --------------------------------------------------------------------
-while getopts ':ht' OPT; do
+while getopts ':hqt' OPT; do
     case "$OPT" in
         h)
             echo "$USAGE"
             exit 0
+            ;;
+
+        q)
+            certbot_extra_args+=("--quiet")
             ;;
 
         t)
@@ -280,12 +283,9 @@ stop_nginx
 # so we must cd in the temp directory
 cd "$temp_dir"
 
-# TODO implement parameters for
-#   - non-batch/interactive mode
-# exchange following lines if you need to debug or test this script:
 sudo "$letsencrypt" certonly \
   --standalone \
-  --non-interactive --quiet --agree-tos \
+  --non-interactive --agree-tos \
   "${certbot_extra_args[@]}" \
   --email "$email" --csr "$request_file" || {
     error "The certificate cannot be obtained with '$letsencrypt' tool."
