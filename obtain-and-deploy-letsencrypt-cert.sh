@@ -12,7 +12,7 @@ set -o nounset
 SCRIPTNAME=${0##*/}
 USAGE="USAGE
     $SCRIPTNAME -h
-    $SCRIPTNAME
+    $SCRIPTNAME [-t]
 
 DESCRIPTION
     This script is used for extend the already-deployed zimbra
@@ -37,7 +37,10 @@ DESCRIPTION
         openssl
 
 OPTIONS
-    -h      Prints this message and exits"
+    -h      Prints this message and exits
+
+    -t      Use staging Let's Encrypt URL; will issue not-trusted
+            certificate, but useful for testing"
 
 # --------------------------------------------------------------------
 # -- Functions -------------------------------------------------------
@@ -157,14 +160,20 @@ letsencrypt_issued_cert_file="0000_cert.pem"
 # intermediate CA
 letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
 
+certbot_extra_args=()
+
 # --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
 # --------------------------------------------------------------------
-while getopts ':h' OPT; do
+while getopts ':ht' OPT; do
     case "$OPT" in
         h)
             echo "$USAGE"
             exit 0
+            ;;
+
+        t)
+            certbot_extra_args+=("--staging")
             ;;
 
         \?)
@@ -243,10 +252,10 @@ assemble_csr_config "${common_names[@]}" > "$openssl_config_file"
 
 # create the certificate signing request [csr]
 openssl req -new -nodes -sha256 -outform der \
-    -config "$openssl_config_file" \
-    -subj "$cert_subject" \
-    -key "$zimbra_key" \
-    -out "$request_file" || {
+  -config "$openssl_config_file" \
+  -subj "$cert_subject" \
+  -key "$zimbra_key" \
+  -out "$request_file" || {
     error "Cannot create the certificate signing request."
     cleanup
     exit 3
@@ -261,17 +270,12 @@ stop_nginx
 cd "$temp_dir"
 
 # TODO implement parameters for
-#   - staging environment
 #   - non-batch/interactive mode
 # exchange following lines if you need to debug or test this script:
-#"$letsencrypt" certonly \
-#  --staging \
-#  --standalone \
-#  --non-interactive --agree-tos \
-#  --email "$email" --csr "$request_file" || {
 sudo "$letsencrypt" certonly \
   --standalone \
   --non-interactive --quiet --agree-tos \
+  "${certbot_extra_args[@]}" \
   --email "$email" --csr "$request_file" || {
     error "The certificate cannot be obtained with '$letsencrypt' tool."
     start_nginx
