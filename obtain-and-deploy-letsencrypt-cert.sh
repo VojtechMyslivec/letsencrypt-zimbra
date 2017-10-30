@@ -46,15 +46,15 @@ OPTIONS
 #  $1 - level
 #  $2 - message
 message() {
-    echo "$SCRIPTNAME[$1]: $2" >&2
+    echo "$SCRIPTNAME: $1: $2" >&2
 }
 
 error() {
-    message "err" "$*"
+    message "error" "$*"
 }
 
 warning() {
-    message "warn" "$*"
+    message "warning" "$*"
 }
 
 information() {
