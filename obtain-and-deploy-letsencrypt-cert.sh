@@ -255,7 +255,6 @@ readable_file "$root_CA_file" || {
 # --------------------------------------------------------------------
 # -- Temporary files -------------------------------------------------
 # --------------------------------------------------------------------
-information "create csr config '$openssl_config_file'"
 temp_dir=$( mktemp -d ) || {
     error "Cannot create temporary directory."
     exit 2
@@ -263,6 +262,7 @@ temp_dir=$( mktemp -d ) || {
 openssl_config_file="${temp_dir}/openssl.cnf"
 request_file="${temp_dir}/request.pem"
 
+information "create csr config '$openssl_config_file'"
 # create the openssl config file from common_names array
 assemble_csr_config "${common_names[@]}" > "$openssl_config_file"
 
