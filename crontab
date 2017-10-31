@@ -1,7 +1,6 @@
-DIR=/opt/letsencrypt-zimbra
-# send a notification a week before the certificate will be obtained
-0 0 1 */2 * zimbra $DIR/sendmail-notification.sh --reminder 7
-# send a notification a day before the certificate will be obtained
-0 0 7 */2 * zimbra $DIR/sendmail-notification.sh --reminder 1
+## crontab
+#
+MAILTO=admin@example.org
+
 # renew the certificate
-42 0 * * * zimbra $DIR/obtain-and-deploy-letsencrypt-cert.sh -q && $DIR/sendmail-notification.sh --success
+42 0 * * * zimbra /opt/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh -q
