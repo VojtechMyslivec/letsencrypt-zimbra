@@ -74,6 +74,11 @@ executable_file() {
     [ -f "$1" -a -x "$1" ]
 }
 
+# is $1 a writable directory?
+writable_directory() {
+    [ -d "$1" -a -w "$1" ]
+}
+
 cleanup() {
     information "cleanup temp files"
 
@@ -255,15 +260,26 @@ for bin in zmcertmgr zmcontrol zmmailboxdctl zmproxyctl; do
     }
 done
 
-readable_file "$zimbra_key" || {
-    error "Private key '$zimbra_key' isn't readable file."
-    exit 2
-}
-
 readable_file "$root_CA_file" || {
     error "The root CA certificate '$root_CA_file' isn't readable file."
     exit 2
 }
+
+writable_directory "$zimbra_ssl_dir" || {
+    error "Zimbra SSL directory '$zimbra_ssl_dir' is not writable"
+    exit 2
+}
+
+# Check and generate private-key if not present
+if ! readable_file "$zimbra_key"; then
+    information "Generating RSA private key '$zimbra_key'"
+    openssl genrsa -out "$zimbra_key" 4096 &> /dev/null || {
+        error "Can not generate RSA private key '$zimbra_key'"
+        information "Try to generate it in Zimbra web interface or with following command:
+        openssl genrsa -out '$zimbra_key' 4096"
+        exit 3
+    }
+fi
 
 # --------------------------------------------------------------------
 # -- Temporary files -------------------------------------------------
