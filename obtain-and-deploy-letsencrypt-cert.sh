@@ -15,24 +15,18 @@ USAGE="USAGE
     $SCRIPTNAME [-q|-v] [-t] [-f|-d days]
 
 DESCRIPTION
-    This script is used for extend the already-deployed zimbra
-    (so-called) commercial certificate issued by Let's Encrypt
-    certification authority.
+    This script is used to issue or renew zimbra (so-called)
+    commercial certificate by Let's Encrypt certification authority.
 
-    It reads its configuration file letsencrypt-zimbra.cfg which
+    It reads its configuration file 'letsencrypt-zimbra.cfg' which
     must be located in the same directory as this script.
 
-    The script will stop zimbra' services for a while and restart
+    The script will stop zimbra services for a while and restart
     them once the certificate is extended and deployed. If the
     obtained certificate isn't valid after all, Zimbra will start
     with the old certificate unchanged.
 
-    Friendly notice: restarting Zimbra take a while (1 m+).
-
-    Depends on:
-        zimbra
-        letsencrypt-auto (certbot) utility
-        openssl
+    Friendly notice: restarting Zimbra take a while.
 
 OPTIONS
     -h      Prints this message and exits
