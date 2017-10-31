@@ -34,10 +34,6 @@ zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
 zimbra_key="${zimbra_ssl_dir}/commercial.key"
 
 
-# root CA certificate - zimbra needs it
-root_CA_file="${letsencrypt_zimbra_dir}/DSTRootCAX3.pem"
-
-
 # mail variables ==========================================
 # 8.7 and later: "${zimbra_dir}/common/sbin/sendmail"
 sendmail="${zimbra_dir}/postfix/sbin/sendmail"
