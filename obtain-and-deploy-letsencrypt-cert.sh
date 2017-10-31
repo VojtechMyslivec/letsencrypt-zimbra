@@ -3,7 +3,7 @@
 #
 # Author:   Vojtech Myslivec <vojtech@xmyslivec.cz>
 #           and others
-# License:  GPLv2
+# License:  GPLv3
 # Web:      https://github.com/VojtechMyslivec/letsencrypt-zimbra
 #
 # --------------------------------------------------------------------
