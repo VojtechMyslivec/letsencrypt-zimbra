@@ -48,7 +48,7 @@ Enjoy **open-source** and **encryption**!
     - Copy prepared sudoers config:
 
         ```
-        cp sudoers.conf /etc/sudoers.d/zimbra_certbot
+        cp configs/sudoers.conf /etc/sudoers.d/zimbra_certbot
         ```
 
     - Test the sudo privilege for 'zimbra' user (no password needed)
@@ -66,7 +66,7 @@ Enjoy **open-source** and **encryption**!
 5. Configure cron jobs
 
     ```
-    cp crontab /etc/cron.d/letsencrypt-zimbra
+    cp configs/cron.conf /etc/cron.d/letsencrypt-zimbra
     ```
 
 

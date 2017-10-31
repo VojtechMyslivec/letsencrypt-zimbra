@@ -227,9 +227,9 @@ shift $(( OPTIND-1 ))
 
 # root CA certificate - zimbra needs it
 if [ "$TESTING" == 'false' ]; then
-    root_CA_file="${letsencrypt_zimbra_dir}/DSTRootCAX3.pem"
+    root_CA_file="${letsencrypt_zimbra_dir}/root_certs/DSTRootCAX3.pem"
 else
-    root_CA_file="${letsencrypt_zimbra_dir}/fakelerootx1.pem"
+    root_CA_file="${letsencrypt_zimbra_dir}/root_certs/fakelerootx1.pem"
 fi
 
 
