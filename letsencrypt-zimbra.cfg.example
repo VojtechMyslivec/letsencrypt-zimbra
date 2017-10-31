@@ -22,7 +22,7 @@ common_names=( "example.com" )
 #common_names=( "example.com" "mail.example.com" "example.cz" )
 
 # letsencrypt tool =========================================
-letsencrypt="/opt/certbot/letsencrypt-auto"
+letsencrypt="/opt/certbot/certbot-auto"
 
 zimbra_dir="/opt/zimbra"
 
@@ -35,8 +35,7 @@ zimbra_key="${zimbra_ssl_dir}/commercial.key"
 
 
 # mail variables ==========================================
-# 8.7 and later: "${zimbra_dir}/common/sbin/sendmail"
-sendmail="${zimbra_dir}/postfix/sbin/sendmail"
+sendmail="${zimbra_dir}/common/sbin/sendmail"
 
 ### reminder mail ###
 reminder_subject="Certificate renewal in ${2:-x} day(s)"
