@@ -1,7 +1,7 @@
 ## letsencrypt-zimbra.cfg
 #
 # A configuration file - shell script - with variables
-# this file is sourced by other scripts
+# this file is sourced by main script
 
 # letsencrypt-zimbra parameters ============================
 # Email to use for LE registration and to send the notifications
@@ -24,31 +24,10 @@ common_names=( "example.com" )
 # letsencrypt tool =========================================
 letsencrypt="/opt/certbot/certbot-auto"
 
+# zimbra files =============================================
 zimbra_dir="/opt/zimbra"
 zimbra_bin_dir="${zimbra_dir}/bin"
 
 zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
 zimbra_key="${zimbra_ssl_dir}/commercial.key"
 zimbra_cert="${zimbra_ssl_dir}/commercial.crt"
-
-
-# mail variables ==========================================
-sendmail="${zimbra_dir}/common/sbin/sendmail"
-
-### reminder mail ###
-reminder_subject="Certificate renewal in ${2:-x} day(s)"
-reminder_message="Hello,
-this is just a kindly reminder that a letsencrypt-zimbra tool
-will try to obtain and install new zimbra certificate in ${2:-x} day(s).
-
-Sincerelly yours,
-letsencrypt-zimbra"
-
-### success mail ###
-success_subject="Certificate has been renewed"
-success_message="Hello,
-this is just a kindly reminder that your letsencrypt-zimbra tool
-renewed successfully your Zimbra certificate!
-
-Sincerelly yours,
-letsencrypt-zimbra"
