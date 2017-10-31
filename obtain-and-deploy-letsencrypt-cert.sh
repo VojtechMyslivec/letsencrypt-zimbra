@@ -175,6 +175,8 @@ letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
 certbot_extra_args=()
 TESTING='false'
 VERBOSE='false'
+FORCE='false'
+DAYS='14'
 
 # --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
@@ -223,9 +225,28 @@ fi
 
 
 # --------------------------------------------------------------------
+# -- Renew? ----------------------------------------------------------
+# --------------------------------------------------------------------
+# check the need to renew if the cert is present an force mode is off
+if ! readable_file "$zimbra_cert"; then
+    information "Zimbra certificate does not exist. New cert will be deployed."
+else
+    if [ "$FORCE" == 'true' ]; then
+        information "Running in force mode, certificate will be renewed."
+    else
+        if openssl x509 -checkend $(( DAYS*24*60*60 )) -in "$zimbra_cert" &> /dev/null; then
+            information "Certificate will be valid for next $DAYS days, exiting (Run with '-f' to force-renew)."
+            exit 0
+        else
+            information "Certificate will expire in $DAYS, certificate will be renewed."
+        fi
+    fi
+fi
+
+
+# --------------------------------------------------------------------
 # -- Tests -----------------------------------------------------------
 # --------------------------------------------------------------------
-
 # check simple email format
 [[ "$email" =~ ^[^[:space:]]+@[^[:space:]]+\.[^[:space:]]+$ ]] || {
     error "email '$email' is in wrong format - use user@domain.tld"
@@ -276,6 +297,7 @@ if ! readable_file "$zimbra_key"; then
         exit 3
     }
 fi
+
 
 # --------------------------------------------------------------------
 # -- Temporary files -------------------------------------------------
