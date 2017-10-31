@@ -83,7 +83,7 @@ cleanup() {
     information "cleanup temp files"
 
     [ -d "$temp_dir" ] && {
-        rm -r "$temp_dir" || {
+        rm -rf "$temp_dir" || {
             warning "Cannot remove temporary directory '$temp_dir'. You should check it for private data."
         }
     }
@@ -106,7 +106,6 @@ stop_nginx() {
       zmmailboxdctl stop > /dev/null || {
         error "There were some error during stopping the Zimbra' nginx."
         fix_nginx_message
-        cleanup
         exit 3
     }
 }
@@ -119,7 +118,6 @@ start_nginx() {
       zmmailboxdctl start > /dev/null || {
         error "There were some error during starting the Zimbra' nginx."
         fix_nginx_message
-        cleanup
         exit 3
     }
 }
@@ -304,7 +302,6 @@ openssl req -new -nodes -sha256 -outform der \
   -key "$zimbra_key" \
   -out "$request_file" || {
     error "Cannot create the certificate signing request."
-    cleanup
     exit 3
 }
 
@@ -324,7 +321,6 @@ sudo "$letsencrypt" certonly \
   --email "$email" --csr "$request_file" || {
     error "The certificate cannot be obtained with '$letsencrypt' tool."
     start_nginx
-    cleanup
     exit 4
 }
 
@@ -346,20 +342,17 @@ chain_file="${temp_dir}/chain.pem"
 
 touch "$chain_file" || {
     error "Cannot create a chain file '$chain_file'."
-    cleanup
     exit 4
 }
 
 # change ownership to zimbra user
 readable_file "$cert_file" || {
     error "The issued certificate file '$cert_file' isn't readable file. Maybe it was created with different name?"
-    cleanup
     exit 4
 }
 
 readable_file "$intermediate_CA_file" || {
     error "The issued intermediate CA file '$intermediate_CA_file' isn't readable file. Maybe it was created with different name?"
-    cleanup
     exit 4
 }
 
@@ -370,14 +363,12 @@ cat "$intermediate_CA_file" "$root_CA_file" > "$chain_file"
 information "test and deploy certificates"
 zmcertmgr verifycrt comm "$zimbra_key" "$cert_file" "$chain_file" > /dev/null || {
     error "Verification of the issued certificate failed."
-    cleanup
     exit 4
 }
 
 # install the certificate to Zimbra
 zmcertmgr deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
     error "Installation of the issued certificate failed."
-    cleanup
     exit 4
 }
 
@@ -386,7 +377,6 @@ zmcertmgr deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
 information "restart zimbra"
 zmcontrol restart > /dev/null || {
     error "Restarting zimbra failed."
-    cleanup
     exit 5
 }
 
