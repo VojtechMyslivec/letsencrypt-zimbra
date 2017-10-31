@@ -12,7 +12,7 @@ set -o nounset
 SCRIPTNAME=${0##*/}
 USAGE="USAGE
     $SCRIPTNAME -h
-    $SCRIPTNAME [-q|-v] [-t]
+    $SCRIPTNAME [-q|-v] [-t] [-f|-d days]
 
 DESCRIPTION
     This script is used for extend the already-deployed zimbra
@@ -37,6 +37,9 @@ DESCRIPTION
 OPTIONS
     -h      Prints this message and exits
 
+    -d num  Do not renew the cert if it exists and will be valid
+            for next 'num' days (default 14)
+    -f      Force renew the certificate
     -q      Quiet mode, suitable for cron (overrides '-v')
     -v      Verbose mode, useful for testing (overrides '-q')
     -t      Use staging Let's Encrypt URL; will issue not-trusted
@@ -181,11 +184,23 @@ DAYS='14'
 # --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
 # --------------------------------------------------------------------
-while getopts ':hqtv' OPT; do
+while getopts ':hd:fqtv' OPT; do
     case "$OPT" in
         h)
             echo "$USAGE"
             exit 0
+            ;;
+
+        d)
+            DAYS="$OPTARG"
+            [[ "$DAYS" =~ ^[0-9]+$ ]] || {
+                error "Specified number of days '$days' is not a Integer"
+                exit 1
+            }
+            ;;
+
+        f)
+            FORCE='true'
             ;;
 
         q)
