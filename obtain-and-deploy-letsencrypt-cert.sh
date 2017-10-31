@@ -152,8 +152,6 @@ source "$letsencrypt_zimbra_config" || {
 PATH="$zimbra_bin_dir:$PATH"
 
 
-# subject in request -- does not matter for letsencrypt but must be there for openssl
-cert_subject="/"
 # openssl config skeleton
 #  it is important to have an alt_names section there!
 openssl_config="
@@ -302,7 +300,7 @@ information "generate csr '$request_file'"
 # create the certificate signing request [csr]
 openssl req -new -nodes -sha256 -outform der \
   -config "$openssl_config_file" \
-  -subj "$cert_subject" \
+  -subj '/' \
   -key "$zimbra_key" \
   -out "$request_file" || {
     error "Cannot create the certificate signing request."
