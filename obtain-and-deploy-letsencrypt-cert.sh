@@ -249,7 +249,7 @@ else
     if [ "$FORCE" == 'true' ]; then
         information "Running in force mode, certificate will be renewed."
     else
-        if openssl x509 -checkend $(( DAYS*24*60*60 )) -in "$zimbra_cert"; then
+        if openssl x509 -checkend $(( DAYS*24*60*60 )) -in "$zimbra_cert" &> /dev/null; then
             information "Certificate will be valid for next $DAYS days, exiting (Run with '-f' to force-renew)."
             exit 0
         else
