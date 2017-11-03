@@ -41,7 +41,7 @@ OPTIONS
             certificate, but useful for testing"
 
 # script version: major.minor(.patch)
-VERSION='0.2'
+VERSION='0.2.1'
 
 # --------------------------------------------------------------------
 # -- Functions -------------------------------------------------------
