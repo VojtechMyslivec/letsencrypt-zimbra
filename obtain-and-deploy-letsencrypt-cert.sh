@@ -11,7 +11,7 @@ set -o nounset
 
 SCRIPTNAME=${0##*/}
 USAGE="USAGE
-    $SCRIPTNAME -h
+    $SCRIPTNAME -h|-V
     $SCRIPTNAME [-q|-v] [-t] [-f|-d days]
 
 DESCRIPTION
@@ -30,6 +30,7 @@ DESCRIPTION
 
 OPTIONS
     -h      Prints this message and exits
+    -V      Prints version of the script
 
     -d num  Do not renew the cert if it exists and will be valid
             for next 'num' days (default 14)
@@ -38,6 +39,9 @@ OPTIONS
     -v      Verbose mode, useful for testing (overrides '-q')
     -t      Use staging Let's Encrypt URL; will issue not-trusted
             certificate, but useful for testing"
+
+# script version: major.minor(.patch)
+VERSION='0.2'
 
 # --------------------------------------------------------------------
 # -- Functions -------------------------------------------------------
@@ -178,10 +182,15 @@ DAYS='14'
 # --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
 # --------------------------------------------------------------------
-while getopts ':hd:fqtv' OPT; do
+while getopts ':hVd:fqtv' OPT; do
     case "$OPT" in
         h)
             echo "$USAGE"
+            exit 0
+            ;;
+
+        V)
+            echo "letsencrypt-zimbra version $VERSION"
             exit 0
             ;;
 
