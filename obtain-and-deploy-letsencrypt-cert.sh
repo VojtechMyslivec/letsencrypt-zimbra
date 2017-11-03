@@ -173,7 +173,7 @@ letsencrypt_issued_cert_file="0000_cert.pem"
 # intermediate CA
 letsencrypt_issued_intermediate_CA_file="0000_chain.pem"
 
-certbot_extra_args=()
+certbot_extra_args=("--non-interactive" "--agree-tos")
 TESTING='false'
 VERBOSE='false'
 FORCE='false'
@@ -356,7 +356,6 @@ cd "$temp_dir"
 information "issue certificate; certbot_extra_args: ${certbot_extra_args[@]}"
 sudo "$letsencrypt" certonly \
   --standalone \
-  --non-interactive --agree-tos \
   "${certbot_extra_args[@]}" \
   --email "$email" --csr "$request_file" || {
     error "The certificate cannot be obtained with '$letsencrypt' tool."
