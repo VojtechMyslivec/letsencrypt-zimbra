@@ -22,7 +22,9 @@ common_names=( "example.com" )
 #common_names=( "example.com" "mail.example.com" "example.cz" )
 
 # letsencrypt tool =========================================
-letsencrypt="/opt/certbot/certbot-auto"
+letsencrypt="/usr/bin/certbot"
+# if you clone the certbot from Github, use following line instead
+#letsencrypt="/opt/certbot/certbot"
 
 # zimbra files =============================================
 zimbra_dir="/opt/zimbra"

@@ -24,10 +24,36 @@ Enjoy **open-source** and **encryption**!
 
 ## Setup manual
 
-1. Clone the repositories
+0. Install the certbot
+
+    - Please follow the [official instructions](https://certbot.eff.org/)
+      for your distribution
+
+    - For example on *Ubuntu xenial*:
+
+        1. Add `certbot` *ppa* repository:
+
+            ```
+            apt-get install software-properties-common
+            add-apt-repository ppa:certbot/certbot
+            apt-get update
+            ```
+
+        2. Install `certbot` package
+
+            ```
+            apt-get install certbot
+            ```
+
+    - Alternatively, you can clone the `certbot` from Github:
+
+        ```
+        git clone https://github.com/certbot/certbot.git /opt/certbot
+        ```
+
+1. Clone this repository
 
     ```
-    git clone https://github.com/certbot/certbot.git /opt/certbot
     git clone https://github.com/VojtechMyslivec/letsencrypt-zimbra.git /opt/letsencrypt-zimbra
     ```
 
@@ -43,7 +69,7 @@ Enjoy **open-source** and **encryption**!
       `/opt/letsencrypt-zimbra/letsencrypt-zimbra.cfg`
 
 
-3. Add sudo privileges to 'zimbra' user run certbot-auto
+3. Add sudo privileges to 'zimbra' user run certbot
 
     - Copy prepared sudoers config:
 
@@ -54,7 +80,7 @@ Enjoy **open-source** and **encryption**!
     - Test the sudo privilege for 'zimbra' user (no password needed)
 
         ```
-        sudo -Hu zimbra sudo /opt/certbot/certbot-auto -h
+        sudo -Hu zimbra sudo /usr/bin/certbot -h
         ```
 
 4. Run the script to obtain certificate
