@@ -24,7 +24,7 @@ Enjoy **open-source** and **encryption**!
 
 ## Setup manual
 
-0. Install the certbot
+1. Install the certbot
 
     - Please follow the [official instructions](https://certbot.eff.org/)
       for your distribution
@@ -51,13 +51,13 @@ Enjoy **open-source** and **encryption**!
         git clone https://github.com/certbot/certbot.git /opt/certbot
         ```
 
-1. Clone this repository
+2. Clone this repository
 
     ```
     git clone https://github.com/VojtechMyslivec/letsencrypt-zimbra.git /opt/letsencrypt-zimbra
     ```
 
-2. Create and edit config file
+3. Create and edit config file
 
     - Copy the example file
 
@@ -69,7 +69,7 @@ Enjoy **open-source** and **encryption**!
       `/opt/letsencrypt-zimbra/letsencrypt-zimbra.cfg`
 
 
-3. Add sudo privileges to 'zimbra' user run certbot
+4. Add sudo privileges to 'zimbra' user run certbot
 
     - Copy prepared sudoers config:
 
@@ -83,13 +83,13 @@ Enjoy **open-source** and **encryption**!
         sudo -Hu zimbra sudo /usr/bin/certbot -h
         ```
 
-4. Run the script to obtain certificate
+5. Run the script to obtain certificate
 
     ```
     sudo -Hu zimbra /opt/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh -v
     ```
 
-5. Configure cron jobs
+6. Configure cron jobs
 
     ```
     cp configs/cron.conf /etc/cron.d/letsencrypt-zimbra
