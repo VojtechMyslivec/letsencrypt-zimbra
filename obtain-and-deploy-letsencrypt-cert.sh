@@ -352,6 +352,8 @@ stop_nginx
 # letsencrypt utility stores the obtained certificates in PWD
 # so we must cd in the temp directory
 cd "$temp_dir"
+# ensure generated certificate would be readable for zimbra user
+umask 0022
 
 information "issue certificate; certbot_extra_args: ${certbot_extra_args[@]}"
 sudo "$letsencrypt" certonly \
