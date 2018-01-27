@@ -349,22 +349,26 @@ openssl req -new -nodes -sha256 -outform der \
 stop_nginx
 
 # ----------------------------------------------------------
-# letsencrypt utility stores the obtained certificates in PWD
-# so we must cd in the temp directory
-cd "$temp_dir"
-
 information "issue certificate; certbot_extra_args: ${certbot_extra_args[@]}"
-sudo "$letsencrypt" certonly \
-  --standalone \
-  "${certbot_extra_args[@]}" \
-  --email "$email" --csr "$request_file" || {
-    error "The certificate cannot be obtained with '$letsencrypt' tool."
-    start_nginx
-    exit 4
-}
+(
+    # run in subshell due to working directory and umask change
 
-# cd back -- which is not really neccessarry
-cd - > /dev/null
+    # letsencrypt utility stores the obtained certificates in PWD
+    # so we must cd in the temp directory
+    cd "$temp_dir"
+    # ensure generated certificate would be readable for zimbra user
+    umask 0022
+
+    sudo "$letsencrypt" certonly \
+      --standalone \
+      "${certbot_extra_args[@]}" \
+      --email "$email" --csr "$request_file" || {
+        error "The certificate cannot be obtained with '$letsencrypt' tool."
+        start_nginx
+        exit 4
+    }
+
+)
 # ----------------------------------------------------------
 
 # start Zimbra' nginx again
