@@ -175,6 +175,12 @@ perl_archname=$(perl -MConfig -e 'print $Config{archname}')
 zimbra_perllib="${zimbra_dir}/common/lib/perl5/${perl_archname}:${zimbra_dir}/common/lib/perl5"
 
 
+# Use default values if not set in config file
+zimbra_ssl_dir="${zimbra_ssl_dir:-${zimbra_dir}/ssl/zimbra/commercial}"
+zimbra_key="${zimbra_key:-${zimbra_ssl_dir}/commercial.key}"
+zimbra_cert="${zimbra_cert:-${zimbra_ssl_dir}/commercial.crt}"
+
+
 # openssl config skeleton
 #  it is important to have an alt_names section there!
 openssl_config="

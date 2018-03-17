@@ -29,6 +29,7 @@ letsencrypt="/usr/bin/certbot"
 # zimbra files =============================================
 zimbra_dir="/opt/zimbra"
 
-zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
-zimbra_key="${zimbra_ssl_dir}/commercial.key"
-zimbra_cert="${zimbra_ssl_dir}/commercial.crt"
+# following values are zimbra defaults; change it if you need to
+#zimbra_ssl_dir="${zimbra_dir}/ssl/zimbra/commercial"
+#zimbra_key="${zimbra_ssl_dir}/commercial.key"
+#zimbra_cert="${zimbra_ssl_dir}/commercial.crt"
