@@ -8,6 +8,7 @@
 #
 # --------------------------------------------------------------------
 set -o nounset
+set -o errexit
 
 SCRIPTNAME=${0##*/}
 USAGE="USAGE
@@ -62,7 +63,9 @@ warning() {
 }
 
 information() {
-    [ "$VERBOSE" == 'true' ] && message "info" "$*"
+    if [ "$VERBOSE" == 'true' ]; then
+        message "info" "$*"
+    fi
 }
 
 # is $1 a readable ordinary file?
@@ -107,7 +110,7 @@ stop_nginx() {
       zmmailboxdctl stop > /dev/null || {
         error "There were some error during stopping the Zimbra' nginx."
         fix_nginx_message
-        exit 3
+        return 3
     }
 }
 
@@ -119,7 +122,7 @@ start_nginx() {
       zmmailboxdctl start > /dev/null || {
         error "There were some error during starting the Zimbra' nginx."
         fix_nginx_message
-        exit 3
+        return 3
     }
 }
 
@@ -137,7 +140,7 @@ restart_zimbra() (
 
     zmcontrol restart > /dev/null || {
         error "Restarting zimbra failed."
-        exit 5
+        return 5
     }
 )
 
@@ -438,7 +441,7 @@ zmcertmgr deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
 
 
 # finally, restart the Zimbra
-restart_zimbra || exit $?
+restart_zimbra
 
 
 # --------------------------------------------------------------------
