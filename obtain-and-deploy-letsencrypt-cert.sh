@@ -147,8 +147,8 @@ source "$letsencrypt_zimbra_config" || {
     exit 1
 }
 
-# a lot of binaries in zimbra_bin_dir
-PATH="$zimbra_bin_dir:$PATH"
+# a lot of binaries in zimbra bin dir
+PATH="${zimbra_dir}/bin:$PATH"
 
 
 # openssl config skeleton
