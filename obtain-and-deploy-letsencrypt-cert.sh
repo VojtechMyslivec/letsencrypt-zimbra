@@ -123,6 +123,16 @@ start_nginx() {
     }
 }
 
+# Restart all zimbra services
+restart_zimbra() {
+    information "restart zimbra"
+
+    zmcontrol restart > /dev/null || {
+        error "Restarting zimbra failed."
+        exit 5
+    }
+}
+
 # this function will constructs openssl csr config to stdout
 # arguments are used as SAN
 assemble_csr_config() {
@@ -417,11 +427,7 @@ zmcertmgr deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
 
 
 # finally, restart the Zimbra
-information "restart zimbra"
-zmcontrol restart > /dev/null || {
-    error "Restarting zimbra failed."
-    exit 5
-}
+restart_zimbra
 
 
 # --------------------------------------------------------------------
