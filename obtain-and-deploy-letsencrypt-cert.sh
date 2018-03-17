@@ -123,15 +123,23 @@ start_nginx() {
     }
 }
 
-# Restart all zimbra services
-restart_zimbra() {
+# Restart all zimbra services (run in subshell due to env variables)
+restart_zimbra() (
     information "restart zimbra"
+
+    # set env for perl (for zmwatch)
+    if declare -v PERLLIB &> /dev/null; then
+        PERLLIB="${zimbra_perllib}:${PERLLIB}"
+    else
+        PERLLIB="${zimbra_perllib}"
+    fi
+    export PERLLIB
 
     zmcontrol restart > /dev/null || {
         error "Restarting zimbra failed."
         exit 5
     }
-}
+)
 
 # this function will constructs openssl csr config to stdout
 # arguments are used as SAN
@@ -159,6 +167,9 @@ source "$letsencrypt_zimbra_config" || {
 
 # a lot of binaries in zimbra bin dir
 PATH="${zimbra_dir}/bin:$PATH"
+
+perl_archname=$(perl -MConfig -e 'print $Config{archname}')
+zimbra_perllib="${zimbra_dir}/common/lib/perl5/${perl_archname}:${zimbra_dir}/common/lib/perl5"
 
 
 # openssl config skeleton
@@ -427,7 +438,7 @@ zmcertmgr deploycrt comm "$cert_file" "$chain_file" > /dev/null || {
 
 
 # finally, restart the Zimbra
-restart_zimbra
+restart_zimbra || exit $?
 
 
 # --------------------------------------------------------------------
