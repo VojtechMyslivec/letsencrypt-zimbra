@@ -69,7 +69,7 @@ Enjoy **open-source** and **encryption**!
       `/opt/letsencrypt-zimbra/letsencrypt-zimbra.cfg`
 
 
-4. Add sudo privileges to 'zimbra' user run certbot
+4. Add sudo privileges to 'zimbra' user to run certbot
 
     - Copy prepared sudoers config:
 
@@ -84,12 +84,17 @@ Enjoy **open-source** and **encryption**!
         ```
 
 5. Run the script to obtain certificate
-
+    
+    Note: add the `-t ` option to run a test (see below)
     ```
     sudo -Hu zimbra /opt/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh -v
     ```
 
-6. Configure cron jobs
+6. Configure the cron job and copy it to cron.d
+
+    - Use your editor to change the cron mailto: configuration and optionally the timing
+    
+    then:
 
     ```
     cp configs/cron.conf /etc/cron.d/letsencrypt-zimbra
