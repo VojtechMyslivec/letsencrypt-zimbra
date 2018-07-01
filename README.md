@@ -123,3 +123,4 @@ with `-f` to force renew the cert with Let's Encrypt trusted CA.
 - [Zimbra](https://www.zimbra.org/)
 - [Let's Encrypt](https://letsencrypt.org/)
 - [certbot](https://github.com/certbot/certbot)
+- [cron explanation/timing](https://en.wikipedia.org/wiki/Cron)
