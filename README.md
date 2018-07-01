@@ -77,7 +77,7 @@ Enjoy **open-source** and **encryption**!
         cp configs/sudoers.conf /etc/sudoers.d/zimbra_certbot
         ```
 
-    - Test the sudo privilege for 'zimbra' user (no password needed)
+    - Test the sudo privilege for 'zimbra' user (no password should be needed)
 
         ```
         sudo -Hu zimbra sudo /usr/bin/certbot -h
@@ -99,7 +99,7 @@ Enjoy **open-source** and **encryption**!
     ```
     cp configs/cron.conf /etc/cron.d/letsencrypt-zimbra
     ```
-
+    Note: the renewal of the certificate will not take place if the current certificate is valid for the next $days (defaults to 14, see the script). 
 
 ## Test the configuration and staging environment
 
@@ -114,7 +114,7 @@ To use this environment, use `-t` option when running
 `obtain-and-deploy-letsencrypt-cert.sh`. Also a verbose option `-v` is
 recommended to see information messages what the script is doing.
 
-When the script successfully deploy a staging cert, run the script again
+When the script successfully deployed a staging cert, run the script again
 with `-f` to force renew the cert with Let's Encrypt trusted CA.
 
 
@@ -123,3 +123,4 @@ with `-f` to force renew the cert with Let's Encrypt trusted CA.
 - [Zimbra](https://www.zimbra.org/)
 - [Let's Encrypt](https://letsencrypt.org/)
 - [certbot](https://github.com/certbot/certbot)
+- [cron explanation/timing](https://en.wikipedia.org/wiki/Cron)
