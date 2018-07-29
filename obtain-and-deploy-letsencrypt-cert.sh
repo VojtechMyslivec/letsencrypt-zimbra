@@ -34,7 +34,7 @@ OPTIONS
     -V      Prints version of the script
 
     -d num  Do not renew the cert if it exists and will be valid
-            for next 'num' days (default 14)
+            for next 'num' days (default 30)
     -f      Force renew the certificate
     -q      Quiet mode, suitable for cron (overrides '-v')
     -v      Verbose mode, useful for testing (overrides '-q')
@@ -207,7 +207,7 @@ certbot_extra_args=("--non-interactive" "--agree-tos")
 TESTING='false'
 VERBOSE='false'
 FORCE='false'
-DAYS='14'
+DAYS='30'
 
 # --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
