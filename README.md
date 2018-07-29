@@ -94,15 +94,12 @@ Enjoy **open-source** and **encryption**!
 
 6. Configure the cron job
 
-    - Use your editor to change the cron mailto: configuration and optionally
-      the timing and then
-
     ```
     cp configs/cron.conf /etc/cron.d/letsencrypt-zimbra
     ```
 
-    - *Note*: the renewal of the certificate will not take place if the current
-      certificate is valid for the next $days (defaults to 14, see the script).
+    - Review the `/etc/cron.d/letsencrypt-zimbra` if it meets your system
+      requirements
 
 
 ## Test the configuration and staging environment
