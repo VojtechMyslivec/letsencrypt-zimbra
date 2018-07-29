@@ -84,22 +84,26 @@ Enjoy **open-source** and **encryption**!
         ```
 
 5. Run the script to obtain certificate
-    
-    Note: add the `-t ` option to run a test (see below)
+
     ```
     sudo -Hu zimbra /opt/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh -v
     ```
 
-6. Configure the cron job and copy it to cron.d
+    - *Note*: add the `-t ` option to run a test (see below)
 
-    - Use your editor to change the cron mailto: configuration and optionally the timing
-    
-    then:
+
+6. Configure the cron job
+
+    - Use your editor to change the cron mailto: configuration and optionally
+      the timing and then
 
     ```
     cp configs/cron.conf /etc/cron.d/letsencrypt-zimbra
     ```
-    Note: the renewal of the certificate will not take place if the current certificate is valid for the next $days (defaults to 14, see the script). 
+
+    - *Note*: the renewal of the certificate will not take place if the current
+      certificate is valid for the next $days (defaults to 14, see the script).
+
 
 ## Test the configuration and staging environment
 
