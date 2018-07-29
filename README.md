@@ -22,6 +22,25 @@ Enjoy **open-source** and **encryption**!
 - *sudo* privilege to run *certbot* with `zimbra` user
 
 
+## What the scripts do
+
+The script will perform following steps:
+
+1. Check installed Zimbra TLS certificate
+    - The script exits if the cert is present and will not expire soon
+    - See `-d` and `-f` options
+2. Generate new Zimbra private key if it is missing
+3. Generate signing request with given domain names
+4. Stop Zimbra web server
+5. Run `certbot` (in standalone mode) and use generated request
+6. Start Zimbra web server
+7. Check issued certificate and install it for Zimbra
+8. Restart zimbra services
+
+See the *help* message of the script (`-h`), example config file
+(`letsencrypt-zimbra.cfg.example`) and the code itself for more details.
+
+
 ## Setup manual
 
 1. Install the certbot
