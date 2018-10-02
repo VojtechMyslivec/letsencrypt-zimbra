@@ -102,7 +102,7 @@ See the *help* message of the script (`-h`), example config file
         sudo -Hu zimbra sudo /usr/bin/certbot -h
         ```
 
-5. Run the script to obtain certificate
+5. Run the script to obtain certificate (make sure to be in /opt/letsencrypt-zimbra)
 
     ```
     sudo -Hu zimbra /opt/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh -v
