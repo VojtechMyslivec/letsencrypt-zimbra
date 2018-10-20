@@ -105,7 +105,7 @@ See the *help* message of the script (`-h`), example config file
 5. Run the script to obtain certificate
 
     ```
-    sudo -Hu zimbra /opt/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh -v
+    sudo -Hiu zimbra /opt/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh -v
     ```
 
     - *Note*: add the `-t ` option to run a test (see below)
