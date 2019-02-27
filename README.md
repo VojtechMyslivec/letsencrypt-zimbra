@@ -121,6 +121,24 @@ See the *help* message of the script (`-h`), example config file
       requirements
 
 
+## Update the list of domain names
+
+If you need to edit the list of domain names in your already-deployed
+certificate:
+
+1. Update the list of domain names in `common_name` variable in
+   `letsencrypt-zimbra.cfg`
+
+2. Run the script interactively with an extra `-f` (*force renew*) option:
+
+    ```
+    sudo -Hiu zimbra /opt/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh -vf
+    ```
+
+    - *Warning*: keep in mind Let's Encrypt *rate limits* (see below) when
+      force-renewing a certificate
+
+
 ## Test the configuration and staging environment
 
 Let's Encrypt authority provides [rate
