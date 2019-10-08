@@ -319,7 +319,7 @@ executable_file "$letsencrypt" || {
 }
 
 for bin in zmcertmgr zmcontrol zmmailboxdctl zmproxyctl; do
-    which "$bin" &> /dev/null || {
+    type "$bin" &> /dev/null || {
         error "Zimbra executable '$bin' not found"
         exit 2
     }
