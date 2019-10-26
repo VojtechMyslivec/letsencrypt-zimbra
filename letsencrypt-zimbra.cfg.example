@@ -7,6 +7,9 @@
 # Email to use for LE registration and to send the notifications
 email="admin@example.com"
 
+# Syslog facility. Default: "local6"
+#log_facility="local6"
+
 # One or more FQDNS names to use as common name (or as
 # alternative names more precisely) in the certificate.
 #

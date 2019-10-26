@@ -186,9 +186,10 @@ zimbra_perllib="${zimbra_dir}/common/lib/perl5/${perl_archname}:${zimbra_dir}/co
 
 # Logging parameters
 log_tag="letsencrypt-zimbra"
-log_facility="local6"
+# default value for facility (if not set in config file)
+log_facility="${log_facility:-local6}"
 
-# Use default values if not set in config file
+# zimbra keys paths (with default values)
 zimbra_ssl_dir="${zimbra_ssl_dir:-${zimbra_dir}/ssl/zimbra/commercial}"
 zimbra_key="${zimbra_key:-${zimbra_ssl_dir}/commercial.key}"
 zimbra_cert="${zimbra_cert:-${zimbra_ssl_dir}/commercial.crt}"
