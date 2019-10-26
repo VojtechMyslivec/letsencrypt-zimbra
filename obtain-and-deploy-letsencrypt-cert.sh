@@ -54,18 +54,28 @@ message() {
     echo "$SCRIPTNAME: $1: $2" >&2
 }
 
+# common function to log via syslog
+#  $1 - level
+#  $2 - message
+log() {
+    logger -t "$log_tag" -p "${log_facility}.${1}" "$2"
+}
+
 error() {
     message "error" "$*"
+    log "err" "$*"
 }
 
 warning() {
     message "warning" "$*"
+    log "warning" "$*"
 }
 
 information() {
     if [ "$VERBOSE" == 'true' ]; then
         message "info" "$*"
     fi
+    log "info" "$*"
 }
 
 # is $1 a readable ordinary file?
@@ -174,6 +184,9 @@ PATH="${zimbra_dir}/bin:$PATH"
 perl_archname=$(perl -MConfig -e 'print $Config{archname}')
 zimbra_perllib="${zimbra_dir}/common/lib/perl5/${perl_archname}:${zimbra_dir}/common/lib/perl5"
 
+# Logging parameters
+log_tag="letsencrypt-zimbra"
+log_facility="local6"
 
 # Use default values if not set in config file
 zimbra_ssl_dir="${zimbra_ssl_dir:-${zimbra_dir}/ssl/zimbra/commercial}"
