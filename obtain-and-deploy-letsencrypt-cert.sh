@@ -58,7 +58,9 @@ message() {
 #  $1 - level
 #  $2 - message
 log() {
-    logger -t "$log_tag" -p "${log_facility}.${1}" "$2"
+    if [[ "$log_facility" != "none" ]]; then
+        logger -t "$log_tag" -p "${log_facility}.${1}" "$2"
+    fi
 }
 
 error() {

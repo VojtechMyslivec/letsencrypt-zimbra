@@ -8,6 +8,7 @@
 email="admin@example.com"
 
 # Syslog facility. Default: "local6"
+# Set to "none" if you want to disable syslog logging
 #log_facility="local6"
 
 # One or more FQDNS names to use as common name (or as
