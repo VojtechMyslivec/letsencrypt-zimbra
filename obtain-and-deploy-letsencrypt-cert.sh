@@ -382,7 +382,7 @@ assemble_csr_config "${common_names[@]}" > "$openssl_config_file"
 # --------------------------------------------------------------------
 information "generate csr '$request_file'"
 # create the certificate signing request [csr]
-openssl req -new -nodes -sha256 -outform der \
+openssl req -new -sha256 -outform der \
   -config "$openssl_config_file" \
   -subj '/' \
   -key "$zimbra_key" \
