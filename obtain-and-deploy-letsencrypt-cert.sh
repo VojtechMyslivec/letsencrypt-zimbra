@@ -384,7 +384,7 @@ information "generate csr '$request_file'"
 # create the certificate signing request [csr]
 openssl req -new -sha256 \
   -config "$openssl_config_file" \
-  -subj '/' \
+  -subj "/CN=${common_names[0]}" \
   -key "$zimbra_key" \
   -out "$request_file" || {
     error "Cannot create the certificate signing request."
