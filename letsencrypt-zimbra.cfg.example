@@ -25,10 +25,16 @@ common_names=( "example.com" )
 # example: several CNs
 #common_names=( "example.com" "mail.example.com" "example.cz" )
 
+
 # letsencrypt tool =========================================
 letsencrypt="/usr/bin/certbot"
 # if you clone the certbot from Github, use following line instead
 #letsencrypt="/opt/certbot/certbot-auto"
+
+# Issue a cert with "ISRG Root X1" preferably. Change it to false if you
+# want to use the Let's Encrypt default (and expired) "DST Root CA X3"
+#letsencrypt_altchain="true"
+
 
 # zimbra files =============================================
 zimbra_dir="/opt/zimbra"
