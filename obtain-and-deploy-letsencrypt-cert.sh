@@ -191,6 +191,8 @@ log_tag="letsencrypt-zimbra"
 # default value for facility (if not set in config file)
 log_facility="${log_facility:-local6}"
 
+letsencrypt_altchain=${letsencrypt_altchain:-true}
+
 # zimbra keys paths (with default values)
 zimbra_ssl_dir="${zimbra_ssl_dir:-${zimbra_dir}/ssl/zimbra/commercial}"
 zimbra_key="${zimbra_key:-${zimbra_ssl_dir}/commercial.key}"
@@ -259,6 +261,8 @@ while getopts ':hVd:fqtv' OPT; do
 
         t)
             certbot_extra_args+=("--staging")
+            # there is only the default chain in staging environment
+            letsencrypt_altchain='false'
             TESTING='true'
             ;;
 
@@ -281,10 +285,15 @@ shift $(( OPTIND-1 ))
 }
 
 # root CA certificate - zimbra needs it
-if [ "$TESTING" == 'false' ]; then
-    root_CA_file="${letsencrypt_zimbra_dir}/root_certs/DSTRootCAX3.pem"
-else
+if [[ "$TESTING" == 'true' ]]; then
     root_CA_file="${letsencrypt_zimbra_dir}/root_certs/fakelerootx1.pem"
+else
+    if [[ "$letsencrypt_altchain" == 'true' ]]; then
+        root_CA_file="${letsencrypt_zimbra_dir}/root_certs/ISRG_Root_X1.crt"
+        certbot_extra_args+=("--preferred-chain" "ISRG Root X1")
+    else
+        root_CA_file="${letsencrypt_zimbra_dir}/root_certs/DSTRootCAX3.pem"
+    fi
 fi
 
 
