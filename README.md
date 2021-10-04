@@ -48,27 +48,19 @@ See the *help* message of the script (`-h`), example config file
     - Please follow the [official instructions](https://certbot.eff.org/)
       for your distribution
 
-    - For example on *Ubuntu xenial*:
+    - For example on *Ubuntu bionic*:
 
-        1. Add `certbot` *ppa* repository:
-
-            ```
-            apt-get install software-properties-common
-            add-apt-repository ppa:certbot/certbot
-            apt-get update
-            ```
-
-        2. Install `certbot` package
+        1. Install `pip3`
 
             ```
-            apt-get install certbot
+            apt install python3-pip
             ```
 
-    - Alternatively, you can clone the `certbot` from Github:
+        2. Install `certbot` pip package
 
-        ```
-        git clone https://github.com/certbot/certbot.git /opt/certbot
-        ```
+            ```
+            pip3 install certbot cryptography~=3.3.0 pyOpenSSL~=19.1.0 zope.interface~=5.4
+            ```
 
 2. Clone this repository
 
@@ -99,7 +91,7 @@ See the *help* message of the script (`-h`), example config file
     - Test the sudo privilege for 'zimbra' user (no password should be needed)
 
         ```
-        sudo -Hu zimbra sudo /usr/bin/certbot -h
+        sudo -Hu zimbra sudo /usr/local/bin/certbot -h
         ```
 
 5. Run the script to obtain certificate
