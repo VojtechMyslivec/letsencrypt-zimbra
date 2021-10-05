@@ -284,7 +284,8 @@ shift $(( OPTIND-1 ))
 
 # root CA certificate - zimbra needs it
 if [[ "$TESTING" == 'true' ]]; then
-    root_CA_file="${letsencrypt_zimbra_dir}/root_certs/fakelerootx1.pem"
+    root_CA_file="${letsencrypt_zimbra_dir}/root_certs/letsencrypt-stg-root-x1.pem"
+    certbot_extra_args+=("--preferred-chain" "(STAGING) Pretend Pear X1")
 else
     if [[ "$letsencrypt_altchain" == 'true' ]]; then
         root_CA_file="${letsencrypt_zimbra_dir}/root_certs/ISRG_Root_X1.crt"
