@@ -91,7 +91,7 @@ See the *help* message of the script (`-h`), example config file
     - Test the sudo privilege for 'zimbra' user (no password should be needed)
 
         ```
-        sudo -Hu zimbra sudo /usr/bin/certbot -h
+        sudo -Hu zimbra sudo /usr/local/bin/certbot -h
         ```
 
 5. Run the script to obtain certificate
