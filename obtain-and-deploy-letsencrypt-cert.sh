@@ -192,6 +192,10 @@ log_tag="letsencrypt-zimbra"
 log_facility="${log_facility:-local6}"
 
 letsencrypt_altchain=${letsencrypt_altchain:-true}
+if ! [[ "$letsencrypt_altchain" == 'true' || "$letsencrypt_altchain" == 'false' ]]; then
+    warning "letsencrypt_altchain parameter has unsupported value '$letsencrypt_altchain'; considering as 'false'"
+    letsencrypt_altchain='false'
+fi
 
 # zimbra keys paths (with default values)
 zimbra_ssl_dir="${zimbra_ssl_dir:-${zimbra_dir}/ssl/zimbra/commercial}"
