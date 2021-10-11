@@ -138,7 +138,7 @@ limits](https://letsencrypt.org/docs/rate-limits/).  The best practice is to
 test the configuration and script on [staging
 environment](https://letsencrypt.org/docs/staging-environment/), where rate
 limits are much more benevolent. Certificates issued by this staging
-environment are signed with *Fake LE ROOT* CA and so **they are not trusted**.
+environment are signed with *(STAGING) Pretend Pear X1* CA and so **they are not trusted**.
 
 To use this environment, use `-t` option when running
 `obtain-and-deploy-letsencrypt-cert.sh`. Also a verbose option `-v` is
