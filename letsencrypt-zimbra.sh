@@ -234,6 +234,10 @@ DAYS='30'
 # --------------------------------------------------------------------
 # -- Usage -----------------------------------------------------------
 # --------------------------------------------------------------------
+if [[ "$SCRIPTNAME" == 'obtain-and-deploy-letsencrypt-cert.sh' ]]; then
+    warning "You are using deprecated script name, change it to 'letsencrypt-zimbra.sh'"
+fi
+
 while getopts ':hVd:fqtv' OPT; do
     case "$OPT" in
         h)
