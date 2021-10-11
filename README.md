@@ -8,7 +8,7 @@ renewal of the certificate.
 
 Start with *Setup manual* below and help message of the script
     ```
-    obtain-and-deploy-letsencrypt-cert.sh -h`
+    letsencrypt-zimbra.sh -h`
     ```
 
 Enjoy **open-source** and **encryption**!
@@ -97,7 +97,7 @@ See the *help* message of the script (`-h`), example config file
 5. Run the script to obtain certificate
 
     ```
-    sudo -Hiu zimbra /opt/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh -v
+    sudo -Hiu zimbra /opt/letsencrypt-zimbra/letsencrypt-zimbra.sh -v
     ```
 
     - *Note*: add the `-t ` option to run a test (see below)
@@ -124,7 +124,7 @@ certificate:
 2. Run the script interactively with an extra `-f` (*force renew*) option:
 
     ```
-    sudo -Hiu zimbra /opt/letsencrypt-zimbra/obtain-and-deploy-letsencrypt-cert.sh -vf
+    sudo -Hiu zimbra /opt/letsencrypt-zimbra/letsencrypt-zimbra.sh -vf
     ```
 
     - *Warning*: keep in mind Let's Encrypt *rate limits* (see below) when
@@ -140,9 +140,9 @@ environment](https://letsencrypt.org/docs/staging-environment/), where rate
 limits are much more benevolent. Certificates issued by this staging
 environment are signed with *(STAGING) Pretend Pear X1* CA and so **they are not trusted**.
 
-To use this environment, use `-t` option when running
-`obtain-and-deploy-letsencrypt-cert.sh`. Also a verbose option `-v` is
-recommended to see information messages what the script is doing.
+To use this environment, use `-t` option when running `letsencrypt-zimbra.sh`.
+Also a verbose option `-v` is recommended to see information messages what the
+script is doing.
 
 When the script successfully deployed a staging cert, run the script again
 with `-f` to force renew the cert with Let's Encrypt trusted CA.
