@@ -265,8 +265,6 @@ while getopts ':hVd:fqtv' OPT; do
 
         t)
             certbot_extra_args+=("--staging")
-            # there is only the default chain in staging environment
-            letsencrypt_altchain='false'
             TESTING='true'
             ;;
 
