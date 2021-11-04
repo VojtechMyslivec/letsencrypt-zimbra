@@ -17,7 +17,7 @@ Enjoy **open-source** and **encryption**!
 ## Requirements
 
 - Working installation of *Zimbra Collaboration Suite* (version ≥ 8.7)
-- *certbot* utility
+- *certbot* utility (version ≥ 1.6)
 - *openssl* cli tool
 - *sudo* privilege to run *certbot* with `zimbra` user
 
