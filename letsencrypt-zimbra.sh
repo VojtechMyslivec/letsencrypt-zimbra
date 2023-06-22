@@ -466,7 +466,7 @@ readable_file "$intermediate_CA_file" || {
 }
 
 # create one CA chain file
-cat "$intermediate_CA_file" "$root_CA_file" > "$chain_file"
+cat "$root_CA_file" "$intermediate_CA_file" > "$chain_file"
 
 # verify it with Zimbra tool
 information "test and deploy certificates"
